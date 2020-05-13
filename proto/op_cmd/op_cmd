@@ -1,0 +1,5 @@
+MSG_BEGIN = 1
+msg_ping
+msg_pong
+
+MSG_END
