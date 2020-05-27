@@ -1,14 +1,14 @@
-#ifndef MACROS_HPP
-#define MACROS_HPP
+#ifndef UTILS_MACROS_HPP
+#define UTILS_MACROS_HPP
 
 // ********************* namespace ****************************
-#define NS_NETWORK_BEGIN    namespace network {
-#define NS_NETWORK_END      }
-#define USING_NS_NERWORK    using namespace network
+#define NS_BOOST_NETWORK_BEGIN    namespace boost_network {
+#define NS_BOOST_NETWORK_END      }
+#define USING_NS_BOOST_NERWORK    using namespace boost_network;
 
 #define NS_UTILS_BEGIN      namespace utils {
 #define NS_UTILS_END        }
-#define USING_NS_UTILS      using namespace utils
+#define USING_NS_UTILS      using namespace utils;
 
 
 // ********************* base type ****************************

@@ -5,7 +5,7 @@
 
 NS_UTILS_BEGIN
 
-//黑:30m 红:31m 绿:32m 黄:33m 蓝:34m 紫:35m 深绿:36m 白:37m
+//关闭所有属性:0m 黑:30m 红:31m 绿:32m 黄:33m 蓝:34m 紫:35m 深绿:36m 白:37m
 #define OUTPUT_NULL_COLOUR "\033[0m"
 #define OUTPUT_TRACE_COLOUR "\033[32m"
 #define OUTPUT_DEBUG_COLOUR "\033[37m"
@@ -66,5 +66,8 @@ NS_UTILS_END
 #define log_warn(format, ...) Logger::output(utils::LOG_LEVEL_WARN, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
 #define log_error(format, ...) Logger::output(utils::LOG_LEVEL_ERROR, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
 
+#define CHECK_ERROR_LOG(error, format, ...) \
+    if (error) \
+        log_error(format, ##__VA_ARGS__);
 
 #endif
