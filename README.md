@@ -4,7 +4,7 @@
   
 ## 总览
 编码主体采用c++11  
-目前支持主体模块: proto protocpp  
+目前支持主体模块: proto protocpp utils boost_network
   
 ## Proto
 通讯协议序列化方案采用protobuf  
