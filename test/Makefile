@@ -1,11 +1,11 @@
 include ../Makefile.config
 
-INCLUDE=$(BASE_INCLUDE) -I. -I.. -I../..
-LIB_PATH=$(BASE_LIB_PATH)
-LIB=$(BASE_LIB)
-USER_LIB=../utils/libutils.a
+INCLUDE=$(BASE_INCLUDE) -I. -I.. -I../.. -I../third_module/include
+LIB_PATH=$(BASE_LIB_PATH) -L../third_module/lib
+LIB=$(BASE_LIB) -lprotobuf
+USER_LIB=../utils/libutils.a ../protocpp/libprotocpp.a
 
-SRCS=$(wildcard */*.cpp)
+SRCS=$(wildcard */*.cpp */*.zjx)
 OBJS=$(SRCS:.cpp=.o)
 DEPS=$(SRCS:.cpp=.d)
 

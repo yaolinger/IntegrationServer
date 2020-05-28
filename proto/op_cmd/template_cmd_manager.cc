@@ -17,4 +17,16 @@ void CmdManager::init() {
 %endfor
 }
 
+void CmdManager::clear() {
+	m_descMap.clear();
+}
+
+const char* CmdManager::getMsgDesc(uint32 cmd) {
+	auto iter = m_descMap.find(cmd);
+	if (iter != m_descMap.end()) {
+		return iter->second.c_str();
+	}
+	return NULL;
+}
+
 NS_PROTOCPP_END

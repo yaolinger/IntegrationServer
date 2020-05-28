@@ -1,9 +1,11 @@
-syntax = "proto3";
+syntax = "proto2";
 
 package proto.server;
 
 message msg_ping {
+    optional uint32 index = 1;
 }
 
 message msg_pong {
+    optional string index = 1;
 }
