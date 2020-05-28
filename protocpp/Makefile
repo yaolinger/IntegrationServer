@@ -1,8 +1,8 @@
 include ../Makefile.config
 
-INCLUDE = $(BASE_INCLUDE) -I../third_module/include -I.
+INCLUDE = $(BASE_INCLUDE) -I../third_module/include -I. -I..
 
-SRCS = $(wildcard */*.cc)
+SRCS = $(wildcard *.cc */*.cc)
 OBJS = $(SRCS:.cc=.o)
 DEPS = $(SRCS:.cc=.d)
 
@@ -20,10 +20,10 @@ $(TARGET) : $(OBJS)
 	@ar -crs $(TARGET) $(OBJS)
 
 clean:
-	rm -f */*.o */*.d $(TARGET)
+	rm -f */*.o */*.d *.o *.d $(TARGET)
 
 distclean:
-	rm -f */*.cc */*.h *.hpp
+	rm -f */*.cc */*.h *.hpp *.cc
 
 .PHONY: all clean distclean
 

@@ -1,14 +1,16 @@
-#ifndef OP_CMD_HPP
-#define OP_CMD_HPP
+#ifndef PROTOCPP_OP_CMD_HPP
+#define PROTOCPP_OP_CMD_HPP
 
-namespace op_cmd {
+#include "utils/macros.hpp"
+
+NS_PROTOCPP_BEGIN
     // 协议枚举
     enum {
 %for key, value in Msgs:
-    ${value} = ${key},
+		${value} = ${key},
 %endfor
     };
 
-}
+NS_PROTOCPP_END
 
 #endif
