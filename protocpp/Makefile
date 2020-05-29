@@ -1,6 +1,6 @@
 include ../Makefile.config
 
-INCLUDE = $(BASE_INCLUDE) -I../third_module/include -I. -I..
+INCLUDE = $(BASE_INCLUDE) -I. -I..
 
 SRCS = $(wildcard *.cc */*.cc)
 OBJS = $(SRCS:.cc=.o)

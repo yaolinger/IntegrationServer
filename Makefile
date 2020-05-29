@@ -1,4 +1,4 @@
-SUBDIRS = utils boost_network proto protocpp
+SUBDIRS = utils proto protocpp boost_network test
 
 all :
 	@for dir in $(SUBDIRS); \

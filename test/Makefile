@@ -1,7 +1,7 @@
 include ../Makefile.config
 
-INCLUDE=$(BASE_INCLUDE) -I. -I.. -I../.. -I../third_module/include
-LIB_PATH=$(BASE_LIB_PATH) -L../third_module/lib
+INCLUDE=$(BASE_INCLUDE) -I. -I.. -I../..
+LIB_PATH=$(BASE_LIB_PATH)
 LIB=$(BASE_LIB) -lprotobuf
 USER_LIB=../utils/libutils.a ../protocpp/libprotocpp.a
 
