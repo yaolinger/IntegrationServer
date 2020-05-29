@@ -27,8 +27,30 @@ void Acceptor::onWriteError(const TcpSocketPtr& s, const boost::system::error_co
     if (!s) {
         log_error("NULL == s");
         return;
-    };
+    }
     log_warn("%s[%s:%d] was disconnected, error[%d:%s]", m_ioCallback->name(), s->getIp().c_str(), s->getSocketId(), ec.value(), ec.message().c_str());
+}
+
+void Acceptor::onDelSocket(const TcpSocketPtr& s) {
+	if (!s) {
+		log_error("NULL == s");
+		return;
+	}
+
+	m_strand.post([this, s]() {
+				 auto iter = std::find_if(m_socketVec.begin(), m_socketVec.end(), [s](const TcpSocketPtr& pSocketPtr) {
+                            if (s == pSocketPtr) {
+                                return true;
+                            }
+                            return false;
+                        });
+                if (iter == m_socketVec.end()) {
+                    return;
+                }
+
+				s->close();
+				m_socketVec.erase(iter);
+			});
 }
 
 void Acceptor::onSocketClose(const TcpSocketPtr& s) {

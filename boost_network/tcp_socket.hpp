@@ -24,7 +24,7 @@ public:
     // @param cmd: 协议号 buf:数据 isCompress:是否缩
 	void write(uint16 cmd, const MsgBufPtr& buf, bool isCompress = false);
 
-    // 关闭socket
+    // 主动关闭socket
     void close();
 
 private:
@@ -34,6 +34,7 @@ private:
     // 发起异步写
     void doWrite(const TcpSocketPtr& self);
 
+	// 关闭socket
     void doClose(const TcpSocketPtr& self);
 
     // 读取错误
@@ -74,7 +75,8 @@ private:
     DynamicBuffer m_recvBuffer;      // 已接收数据缓存区
     DynamicBuffer m_sendBuffer[2];   // 待发送数据缓存区
     uint8 m_idleIndex = 0;           // 可写buf闲置索引
-    bool m_asyncWriting = false;      // 异步写入中
+    bool m_asyncWriting = false;     // 异步写入中
+	bool m_notifyCallback = true;    // 回调标识
 
     int32 m_socketId = -1;        // socket id
     uint32 m_msgIndex = 0;        // 消息计数

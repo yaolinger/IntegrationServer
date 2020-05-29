@@ -24,6 +24,8 @@ public:
 
     void onWriteError(const TcpSocketPtr& s, const boost::system::error_code& ec);
 
+	void onDelSocket(const TcpSocketPtr& s);
+
     void onSocketClose(const TcpSocketPtr& s);
 
 public:
@@ -51,6 +53,8 @@ private:
 
     std::vector<TcpSocketPtr> m_socketVec;  // socket列表
 };
+
+typedef std::shared_ptr<Acceptor> AcceptorPtr;
 
 NS_BOOST_NETWORK_END
 #endif

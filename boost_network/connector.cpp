@@ -37,6 +37,28 @@ void Connector::onWriteError(const TcpSocketPtr& s, const boost::system::error_c
 	log_error("[%s] disconnect to socket[%u][%s:%u], error[%d:%s]", m_ioCallback->name(), m_socketPtr->getSocketId(), m_ip.c_str(), m_port, ec.value(), ec.message().c_str());
 }
 
+void Connector::onDelSocket(const TcpSocketPtr& s) {
+	if (!s) {
+		log_error("NULL == s");
+		return;
+	}
+	m_strand.post([this, s]() {
+				if (!m_socketPtr) {
+					return;
+				}
+
+				if (s != m_socketPtr) {
+					log_error("s != m_socketPtr");
+					return;
+				}
+
+				m_socketPtr->close();
+				m_socketPtr.reset();
+
+				reconnect();
+			});
+}
+
 void Connector::onSocketClose(const TcpSocketPtr& s) {
 	if (!s) {
 		log_error("NULL == s");
@@ -112,12 +134,9 @@ void Connector::stop() {
 	m_strand.post([this]() {
 				m_startSign = false;
 
-				// 建立链接成功 执行socket关闭逻辑
-				if (m_socketPtr) {
-					m_socketPtr->close();
-					m_socketPtr.reset();
-				} else if (!m_socketPtr) {
 				// 建立链接失败 执行取消socket操作
+				// 此时挂在socket上的操作为reconnect connect
+				if (!m_socketPtr) {
 					boost::system::error_code ec;
 					m_newSocket.cancel(ec);
 					CHECK_ERROR_LOG(ec, "[%s] socket cancel error[%d:%s]", m_ioCallback->name(), ec.value(), ec.message().c_str());
@@ -125,6 +144,16 @@ void Connector::stop() {
 
 				// 取消定时器
 				m_timer.cancel();
+			});
+}
+
+void Connector::clear() {
+	m_strand.post([this]() {
+				// 建立链接成功 执行socket关闭逻辑
+				if (m_socketPtr) {
+					m_socketPtr->close();
+					m_socketPtr.reset();
+				}
 			});
 }
 

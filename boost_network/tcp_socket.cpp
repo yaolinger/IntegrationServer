@@ -15,6 +15,7 @@ TcpSocket::TcpSocket(boost::asio::io_service & ios, boost::asio::ip::tcp::socket
         , m_socket(std::move(socket))
         , m_idleIndex(0)
         , m_asyncWriting(false)
+		, m_notifyCallback(true)
         , m_socketId(m_socket.native_handle())
         , m_msgIndex(index)
         , m_port(addr.port())
@@ -80,7 +81,8 @@ void TcpSocket::write(uint16 cmd, const MsgBufPtr& buf, bool isCompress) {
 void TcpSocket::close() {
    auto self(shared_from_this());
    m_strand.post([this, self]() {
-                doClose(self);
+				m_notifyCallback = false;
+				doClose(self);
            });
 }
 
@@ -147,7 +149,10 @@ void TcpSocket::doClose(const TcpSocketPtr& self) {
         CHECK_ERROR_LOG(ec, "Shutdown socket[%d] was error[%s]", m_socketId, ec.message().c_str());
 		m_socket.close(ec);
         CHECK_ERROR_LOG(ec, "Close socket[%d] was error[%s]", m_socketId, ec.message().c_str());
-        m_ioInterface->onSocketClose(self);
+        // 触发逻辑回调
+		if (m_notifyCallback) {
+			m_ioInterface->onSocketClose(self);
+		}
     }
 }
 

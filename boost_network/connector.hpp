@@ -22,6 +22,8 @@ public:
 
     void onWriteError(const TcpSocketPtr& s, const boost::system::error_code& ec);
 
+	void onDelSocket(const TcpSocketPtr& s);
+
     void onSocketClose(const TcpSocketPtr& s);
 
 private:
@@ -30,8 +32,10 @@ private:
 	void reconnect();
 
 public:
-	// 停止链接
+	// 停止主动链接
 	void stop();
+	// 清空链接
+	void clear();
 
     const std::string& getIp() { return m_ip; }
 	uint16 getPort() { return m_port; }
@@ -47,6 +51,8 @@ private:
 	bool m_startSign;                    // 开始标识
 	boost::asio::deadline_timer m_timer; // 重连计时器
 };
+
+typedef std::shared_ptr<Connector> ConnectorPtr;
 
 NS_BOOST_NETWORK_END
 
