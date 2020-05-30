@@ -8,7 +8,7 @@ SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:%.cpp=%.o)
 DEPS = $(SRCS:%.cpp=%.d)
 
-NAME = boost_network
+NAME = service_core
 TARGET = lib$(NAME).a
 
 all : $(TARGET)

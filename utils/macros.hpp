@@ -14,6 +14,10 @@
 #define NS_PROTOCPP_END           }
 #define USING_NS_PROTOCPP         using namespace protocpp;
 
+#define NS_SERVICE_CORE_BEGIN     namespace service_core {
+#define NS_SERVICE_CORE_END       }
+#define USING_NS_SERVICE_CORE     using namespace service_core;
+
 
 // ********************* base type ****************************
 typedef char               int8;
