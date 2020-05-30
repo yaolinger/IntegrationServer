@@ -85,7 +85,8 @@ void BoostNetwork::postCloseSocket(const TcpSocketPtr& s) {
 		return;
 	}
 
-	pIoInterface->onDelSocket(s);
+    // 主动关闭socket
+	pIoInterface->onActiveSocketClose(s);
 }
 
 void BoostNetwork::stopListen() {

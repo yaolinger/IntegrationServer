@@ -31,7 +31,7 @@ void Acceptor::onWriteError(const TcpSocketPtr& s, const boost::system::error_co
     log_warn("%s[%s:%d] was disconnected, error[%d:%s]", m_ioCallback->name(), s->getIp().c_str(), s->getSocketId(), ec.value(), ec.message().c_str());
 }
 
-void Acceptor::onDelSocket(const TcpSocketPtr& s) {
+void Acceptor::onActiveSocketClose(const TcpSocketPtr& s) {
 	if (!s) {
 		log_error("NULL == s");
 		return;
@@ -53,7 +53,7 @@ void Acceptor::onDelSocket(const TcpSocketPtr& s) {
 			});
 }
 
-void Acceptor::onSocketClose(const TcpSocketPtr& s) {
+void Acceptor::onPassiveSocketClose(const TcpSocketPtr& s) {
     if (!s) {
         log_error("NULL == s");
         return;

@@ -22,9 +22,9 @@ public:
 
     void onWriteError(const TcpSocketPtr& s, const boost::system::error_code& ec);
 
-	void onDelSocket(const TcpSocketPtr& s);
+	void onActiveSocketClose(const TcpSocketPtr& s);
 
-    void onSocketClose(const TcpSocketPtr& s);
+    void onPassiveSocketClose(const TcpSocketPtr& s);
 
 private:
 	void connect();

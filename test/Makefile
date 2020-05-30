@@ -9,7 +9,8 @@ SRCS=$(wildcard */*.cpp */*.zjx)
 OBJS=$(SRCS:.cpp=.o)
 DEPS=$(SRCS:.cpp=.d)
 
-TARGET=Test.out
+NAME=test
+TARGET=$(NAME).out
 
 all : $(TARGET)
 
@@ -25,4 +26,7 @@ $(TARGET) : $(OBJS) $(USER_LIB)
 clean :
 	rm */*.d */*.o $(TARGET) -f
 
-.PHONY : all clean
+distclean :
+	@echo "$(NAME) nothing to do~~"
+
+.PHONY : all clean distclean

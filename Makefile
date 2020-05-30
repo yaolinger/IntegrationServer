@@ -12,4 +12,10 @@ clean :
 	  $(MAKE) -C $$dir clean;\
 	done
 
+distclean :
+	@for dir in $(SUBDIRS); \
+	do\
+	  $(MAKE) -C $$dir distclean;\
+	done
+
 .PHONY: all clean

@@ -37,7 +37,7 @@ void Connector::onWriteError(const TcpSocketPtr& s, const boost::system::error_c
 	log_error("[%s] disconnect to socket[%u][%s:%u], error[%d:%s]", m_ioCallback->name(), m_socketPtr->getSocketId(), m_ip.c_str(), m_port, ec.value(), ec.message().c_str());
 }
 
-void Connector::onDelSocket(const TcpSocketPtr& s) {
+void Connector::onActiveSocketClose(const TcpSocketPtr& s) {
 	if (!s) {
 		log_error("NULL == s");
 		return;
@@ -59,7 +59,7 @@ void Connector::onDelSocket(const TcpSocketPtr& s) {
 			});
 }
 
-void Connector::onSocketClose(const TcpSocketPtr& s) {
+void Connector::onPassiveSocketClose(const TcpSocketPtr& s) {
 	if (!s) {
 		log_error("NULL == s");
 		return;

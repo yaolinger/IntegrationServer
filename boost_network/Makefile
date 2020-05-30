@@ -8,7 +8,8 @@ SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:%.cpp=%.o)
 DEPS = $(SRCS:%.cpp=%.d)
 
-TARGET = libboostnetwork.a
+NAME = boostnetwork
+TARGET = lib$(NAME).a
 
 all : $(TARGET)
 
@@ -20,9 +21,12 @@ all : $(TARGET)
 clean:
 	rm *.d *.o $(TARGET) -rf
 
+distclean:
+	@echo "$(NAME) nothing to do ~~~~~~"
+
 $(TARGET) : $(OBJS)
 	@rm $(TARGET) -rf
-	@ar -crs $(TARGET) $(OBJS)
+	ar -crs $(TARGET) $(OBJS)
 
-.PHONY: all clean echo
+.PHONY: all clean  distclean
 

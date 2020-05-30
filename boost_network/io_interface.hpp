@@ -68,9 +68,9 @@ public:
 	// write错误
     virtual void onWriteError(const TcpSocketPtr& s, const boost::system::error_code& ec) = 0;
 	// 主动关闭socket
-	virtual void onDelSocket(const TcpSocketPtr& s) = 0;
+	virtual void onActiveSocketClose(const TcpSocketPtr& s) = 0;
 	// 被动关闭socket
-	virtual void onSocketClose(const TcpSocketPtr& s) = 0;
+	virtual void onPassiveSocketClose(const TcpSocketPtr& s) = 0;
 
     void onNewMsg(const TcpSocketPtr& s, uint16 cmd, const MsgBufPtr& buf) {
         m_ioCallback->onNewMsg(s, cmd, buf);

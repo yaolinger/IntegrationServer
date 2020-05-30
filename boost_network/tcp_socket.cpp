@@ -81,6 +81,8 @@ void TcpSocket::write(uint16 cmd, const MsgBufPtr& buf, bool isCompress) {
 void TcpSocket::close() {
    auto self(shared_from_this());
    m_strand.post([this, self]() {
+                // TODO: 是否处理未发送成功数据包
+
 				m_notifyCallback = false;
 				doClose(self);
            });
@@ -151,7 +153,7 @@ void TcpSocket::doClose(const TcpSocketPtr& self) {
         CHECK_ERROR_LOG(ec, "Close socket[%d] was error[%s]", m_socketId, ec.message().c_str());
         // 触发逻辑回调
 		if (m_notifyCallback) {
-			m_ioInterface->onSocketClose(self);
+			m_ioInterface->onPassiveSocketClose(self);
 		}
     }
 }
