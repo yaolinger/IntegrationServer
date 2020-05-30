@@ -20,7 +20,12 @@ public:
     ~ServerBase();
 
 public:
-    static ServerBase* getInstanice();
+    static ServerBase* getInstance();
+
+	// 设置服务打断状态
+	void setInterrupted() { m_interruptedFlag = true; }
+	// 是否打断
+	bool istInterrupted() { return m_interruptedFlag; }
 
 // 待实现(逻辑层)
 public:
@@ -43,9 +48,13 @@ public:
     virtual bool closeServer() = 0;
     // 信号处理
     virtual bool initSignal() = 0;
+	// 服务打断
+	virtual void interruptedServer() = 0;
 
 private:
     static ServerBase* m_server; // 服务对象
+
+	bool m_interruptedFlag = false; // 服务打断标识
 };
 
 NS_SERVICE_CORE_END

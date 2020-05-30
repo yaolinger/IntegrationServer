@@ -14,7 +14,7 @@ ServerBase::~ServerBase() {
     m_server = NULL;
 }
 
-ServerBase* ServerBase::getInstanice() {
+ServerBase* ServerBase::getInstance() {
     return m_server;
 }
 
