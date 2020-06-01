@@ -2,7 +2,6 @@
 
 #include <signal.h>
 
-#include <boost/asio/signal_set.hpp>
 #include <boost/bind.hpp>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -14,12 +13,7 @@ NS_SERVICE_CORE_BEGIN
 USING_NS_UTILS
 
 static void handleSignal(const boost::system::error_code& ec, int32 signalNumber) {
-	if (ec) {
-	 	log_error("signal[%d] error: %s", signalNumber, ec.message().c_str());
-		return;
-	}
-
-	log_info("recv terminate signal: %d", signalNumber);
+	log_warn("Recv terminate signal: %d, error:[%d:%s]", signalNumber, ec.value(), ec.message().c_str());
 
 	ServerBase* pInstance = ServerBase::getInstance();
 	if (NULL != pInstance && !pInstance->istInterrupted()) {
@@ -75,16 +69,22 @@ bool BoostServer::closeServer() {
 }
 
 bool BoostServer::initSignal() {
-	struct sigaction sig_ing;
-	sig_ing.sa_handler = SIG_IGN;
-	sigaction(SIGHUP, &sig_ing, NULL);
-	sigaction(SIGPIPE, &sig_ing, NULL);
+	// 忽略信号 SIGHUB SIGPIPE
+    struct sigaction siging;
+	siging.sa_handler = SIG_IGN;
+	sigaction(SIGHUP, &siging, NULL);
+	sigaction(SIGPIPE, &siging, NULL);
 
-	boost::asio::signal_set sig_wait(m_ios);
-	sig_wait.add(SIGINT);
-	sig_wait.add(SIGTERM);
-	sig_wait.add(SIGQUIT);
-	sig_wait.async_wait(boost::bind(handleSignal, _1, _2));
+    // 捕捉信号 SIGINT SIGTREAM SIGQUIT
+	try {
+        m_singleWait.add(SIGINT);
+	    m_singleWait.add(SIGTERM);
+	    m_singleWait.add(SIGQUIT);
+    } catch(boost::system::error_code ec) {
+        log_error("Signal add error[%d:%s]", ec.value(), ec.message().c_str());
+        return false;
+    }
+	m_singleWait.async_wait(boost::bind(handleSignal, _1, _2));
 	return true;
 }
 

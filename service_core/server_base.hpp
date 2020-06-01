@@ -37,7 +37,6 @@ public:
     virtual void onRunServer() = 0;
     // 关闭服务
     virtual bool onCloseServer() = 0;
-
 // 待实现(方案层)
 public:
     // 初始化服务

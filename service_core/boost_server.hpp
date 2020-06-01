@@ -4,13 +4,14 @@
 #include "server_base.hpp"
 
 #include <boost/asio/io_service.hpp>
+#include <boost/asio/signal_set.hpp>
 
 NS_SERVICE_CORE_BEGIN
 
 // boost服务
 class BoostServer : public ServerBase {
 public :
-	BoostServer() {}
+	BoostServer() : m_ios(), m_singleWait(m_ios) {}
 	~BoostServer() {}
 
 // 待实现(逻辑层)
@@ -39,8 +40,9 @@ public:
 	boost::asio::io_service& getIos() { return m_ios; }
 
 private:
-	boost::asio::io_service m_ios;
-	std::shared_ptr<boost::asio::io_service::work> m_work;
+	boost::asio::io_service m_ios;                           // boost 服务对象
+    boost::asio::signal_set m_singleWait;                    // boost 信号捕捉对象(RAII机制 析构会强制调用handle)
+	std::shared_ptr<boost::asio::io_service::work> m_work;   // boost 服务控制器
 };
 
 NS_SERVICE_CORE_END
