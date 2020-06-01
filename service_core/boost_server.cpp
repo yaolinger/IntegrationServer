@@ -11,6 +11,7 @@
 
 NS_SERVICE_CORE_BEGIN
 USING_NS_UTILS
+USING_NS_BOOST_NETWORK
 
 static void handleSignal(const boost::system::error_code& ec, int32 signalNumber) {
 	log_warn("Recv terminate signal: %d, error:[%d:%s]", signalNumber, ec.value(), ec.message().c_str());
@@ -92,6 +93,23 @@ void BoostServer::interruptedServer() {
 	m_ios.post([this]() {
 				closeServer();
 			});
+}
+
+bool BoostServer::startNetwork(uint32 threadNum) {
+	return m_network.init(threadNum);
+}
+
+bool BoostServer::listenAt(const std::string& ip, uint16 port, AcceptorCallback* pAcceptorCb) {
+	return m_network.listenAt(ip, port, pAcceptorCb);
+}
+
+bool BoostServer::connectTo(const std::string& ip, uint16 port, ConnectorCallback* pConnectorCb, uint32 reConnectTime) {
+	return m_network.connectTo(ip, port, pConnectorCb, reConnectTime);
+}
+
+void BoostServer::closeNetwork() {
+	m_network.stop();
+	m_network.close();
 }
 
 NS_SERVICE_CORE_END

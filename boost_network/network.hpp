@@ -4,8 +4,9 @@
 #include <map>
 #include <vector>
 
-#include "acceptor.cpp"
+#include "acceptor.hpp"
 #include "connector.hpp"
+#include "io_interface.hpp"
 #include "tcp_socket.hpp"
 #include "utils/macros.hpp"
 #include "utils/thread_pool.hpp"

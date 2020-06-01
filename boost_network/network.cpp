@@ -2,6 +2,8 @@
 
 #include <boost/bind.hpp>
 
+#include "utils/log.hpp"
+
 NS_BOOST_NETWORK_BEGIN
 
 bool BoostNetwork::init(uint32 threadNum) {

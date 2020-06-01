@@ -4,7 +4,7 @@
 // ********************* namespace ****************************
 #define NS_BOOST_NETWORK_BEGIN    namespace boost_network {
 #define NS_BOOST_NETWORK_END      }
-#define USING_NS_BOOST_NERWORK    using namespace boost_network;
+#define USING_NS_BOOST_NETWORK    using namespace boost_network;
 
 #define NS_UTILS_BEGIN            namespace utils {
 #define NS_UTILS_END              }
