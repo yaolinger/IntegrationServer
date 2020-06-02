@@ -11,7 +11,7 @@
 
 NS_BOOST_NETWORK_BEGIN
 
-class TcpSocket : public std::enable_shared_from_this<TcpSocket>, private utils::Noncopyable {
+class TcpSocket : public std::enable_shared_from_this<TcpSocket>, private UTILS::Noncopyable {
 public:
    explicit TcpSocket( boost::asio::io_service & ios, boost::asio::ip::tcp::socket socket, const boost::asio::ip::tcp::endpoint& addr, IoInterface* pIoInterface, uint32 index = 0);
 
@@ -67,6 +67,9 @@ public:
 
     boost::asio::ip::tcp::socket& getSocket() { return m_socket; }
 
+    void bindUid(uint64 uid) { m_bindUid = uid; }
+
+    uint64 getBindUid() { return m_bindUid; }
 private:
     boost::asio::io_service::strand m_strand;  // boost 串行队列
     boost::asio::ip::tcp::socket m_socket;     // boost socket
@@ -84,6 +87,8 @@ private:
     std::string m_ip = "";        // socket ip
 
     IoInterface* m_ioInterface = NULL;      // io对象
+
+    uint64 m_bindUid = 0;            // 绑定id
 };
 
 typedef std::shared_ptr<TcpSocket> TcpSocketPtr;

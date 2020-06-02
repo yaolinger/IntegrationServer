@@ -7,6 +7,10 @@
 #include "utils/macros.hpp"
 #include "utils/log.hpp"
 
+/* 文件修改位置
+ * proto/op_cmd/cmd_manager.hpp
+ */
+
 NS_PROTOCPP_BEGIN
 
 // 协议管理器
@@ -56,5 +60,15 @@ void CmdManager::msgDeserialize(uint16 cmd, MSG_T& msg, const char* pData, uint1
 }
 
 NS_PROTOCPP_END
+
+// 获取协议名
+#define CMD_DESC(cmd) \
+    PROTOCPP::CmdManager::getMsgDesc(cmd)
+// 消息序列化
+#define MSG_SERIALIZE(cmd, msg, pData) \
+    PROTOCPP::CmdManager::msgSerialize(cmd, msg, pData)
+// 消息反序列化
+#define MSG_DESERIALIZE(cmd, msg, pData, size) \
+    PROTOCPP::CmdManager::msgDeserialize(cmd, msg, pData, size)
 
 #endif

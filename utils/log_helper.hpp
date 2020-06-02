@@ -27,6 +27,6 @@ struct FuncTrace {
 NS_UTILS_END
 
 #define FUNC_TRACE \
-		utils::FuncTrace ft(__FILE__, __FUNCTION__, __LINE__);
+		UTILS::FuncTrace ft(__FILE__, __FUNCTION__, __LINE__);
 
 #endif

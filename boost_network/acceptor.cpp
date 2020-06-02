@@ -137,7 +137,7 @@ void Acceptor::accept() {
                             break;
                         }
 
-                        log_debug("[%s] new scoket[%d][%s:%u] connect.", m_ioCallback->name(), m_newSocket.native_handle(), m_newEndpoint.address().to_string(), m_newEndpoint.port());
+                        log_debug("[%s] new scoket[%d][%s:%u] connect.", m_ioCallback->name(), m_newSocket.native_handle(), m_newEndpoint.address().to_string().c_str(), m_newEndpoint.port());
 
                         TcpSocketPtr pSocketPtr = std::make_shared<TcpSocket>(m_ios, std::move(m_newSocket), m_newEndpoint, this);
                         m_socketVec.push_back(pSocketPtr);

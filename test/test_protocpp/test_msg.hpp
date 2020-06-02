@@ -16,10 +16,10 @@ void TestMsg() {
 	msg.set_index(1);
 
 	std::vector<char> data(msg.ByteSizeLong());
-	CmdManager::msgSerialize(protocpp::msg_ping, msg, &data[0]);
+	CmdManager::msgSerialize(PROTOCPP::msg_ping, msg, &data[0]);
 
 	proto::server::msg_ping seMsg;
-	CmdManager::msgDeserialize(protocpp::msg_ping, seMsg, &data[0], data.size());
+	CmdManager::msgDeserialize(PROTOCPP::msg_ping, seMsg, &data[0], data.size());
 
 	log_debug("msg index[%u]", seMsg.index());
 }

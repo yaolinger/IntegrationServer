@@ -44,9 +44,9 @@ public:
     // 开启网络层
     bool startNetwork(uint32 threadNum);
     // 监听
-    bool listenAt(const std::string& ip, uint16 port, boost_network::AcceptorCallback* pAcceptorCb);
+    bool listenAt(const std::string& ip, uint16 port, BOOST_NETWORK::AcceptorCallback* pAcceptorCb);
     // 链接
-    bool connectTo(const std::string& ip, uint16 port, boost_network::ConnectorCallback* pConnectorCb, uint32 reConnectTime);
+    bool connectTo(const std::string& ip, uint16 port, BOOST_NETWORK::ConnectorCallback* pConnectorCb, uint32 reConnectTime);
     // 关闭网络层
     void closeNetwork();
 
@@ -59,7 +59,7 @@ private:
 	std::shared_ptr<boost::asio::io_service::work> m_work;   // boost 服务控制器
 
 private:
-    boost_network::BoostNetwork m_network;                   // 网络层
+    BOOST_NETWORK::BoostNetwork m_network;                   // 网络层
 };
 
 NS_SERVICE_CORE_END

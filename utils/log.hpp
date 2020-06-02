@@ -60,11 +60,11 @@ private:
 
 NS_UTILS_END
 
-#define log_trace(format, ...) utils::Logger::output(utils::LOG_LEVEL_TRACE, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-#define log_debug(format, ...) utils::Logger::output(utils::LOG_LEVEL_DEBUG, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-#define log_info(format, ...) utils::Logger::output(utils::LOG_LEVEL_INFO, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-#define log_warn(format, ...) utils::Logger::output(utils::LOG_LEVEL_WARN, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
-#define log_error(format, ...) utils::Logger::output(utils::LOG_LEVEL_ERROR, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+#define log_trace(format, ...) UTILS::Logger::output(UTILS::LOG_LEVEL_TRACE, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+#define log_debug(format, ...) UTILS::Logger::output(UTILS::LOG_LEVEL_DEBUG, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+#define log_info(format, ...) UTILS::Logger::output(UTILS::LOG_LEVEL_INFO, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+#define log_warn(format, ...) UTILS::Logger::output(UTILS::LOG_LEVEL_WARN, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+#define log_error(format, ...) UTILS::Logger::output(UTILS::LOG_LEVEL_ERROR, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
 
 #define CHECK_ERROR_LOG(error, format, ...) \
     if (error) \

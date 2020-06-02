@@ -1,7 +1,10 @@
+#include "server_global.hpp"
 #include "single_server.hpp"
 
-SingleServer g_server;
+SingleServer* global::pServer = NULL;
 
 int main() {
-	g_server.runServer();
+	SingleServer server;
+    global::pServer = &server;
+    global::pServer->runServer();
 }

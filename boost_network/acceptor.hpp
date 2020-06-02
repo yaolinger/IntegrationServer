@@ -15,7 +15,7 @@ NS_BOOST_NETWORK_BEGIN
 
 class Acceptor : public IoInterface
                , public std::enable_shared_from_this<Acceptor>
-               , public utils::Noncopyable {
+               , public UTILS::Noncopyable {
 public:
     explicit Acceptor(boost::asio::io_service& ios, const std::string& listenIp, uint16 port, IoCallback* pIoCallback);
 

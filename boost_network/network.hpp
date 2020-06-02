@@ -52,7 +52,7 @@ protected:
 private:
 	boost::asio::io_service m_ios;                                // boost asio 服务模块
 	std::shared_ptr<boost::asio::io_service::work> m_workPtr;     // 服务模块控制
-	utils::ThreadPool m_threadPool;                               // 线程池
+	UTILS::ThreadPool m_threadPool;                               // 线程池
 
 	std::map<uint16, AcceptorPtr> m_listenMap;  // 监听map(port:acceptor)
 	std::vector<ConnectorPtr> m_connectVec;     // 主动链接vec

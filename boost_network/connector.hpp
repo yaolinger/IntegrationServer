@@ -13,7 +13,7 @@ NS_BOOST_NETWORK_BEGIN
 
 class Connector : public IoInterface
 				, public std::enable_shared_from_this<Connector>
-			    , public utils::Noncopyable {
+			    , public UTILS::Noncopyable {
 public:
 	explicit Connector(boost::asio::io_service& ios, const std::string& ip, uint16 port, IoCallback* pIoCallback, uint32 reconnectTime);
 
