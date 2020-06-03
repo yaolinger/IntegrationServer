@@ -11,6 +11,7 @@
 
 USING_NS_UTILS
 USING_NS_BOOST_NETWORK
+USING_NS_PROTOCPP
 
 bool SingleServer::onInitServer() {
 	if (!onLoadConfig()) {
@@ -20,6 +21,11 @@ bool SingleServer::onInitServer() {
 
     if (!onInitNetwork()) {
         log_error("Init network failed.");
+        return false;
+    }
+
+    if (!onInitLogic()) {
+        log_error("Init logic failed.");
         return false;
     }
     return true;
@@ -47,12 +53,17 @@ bool SingleServer::onInitNetwork() {
     startNetwork(1);
 
     // 监听
-    if (!listenAt("127.0.0.1", 23333, &m_sentryListner)) {
+    if (!listenAt("0.0.0.0", 23333, &m_sentryListner)) {
         return false;
     }
 
     // init msg
     SentryMsgHandler::initMsgHandler();
+    return true;
+}
+
+bool SingleServer::onInitLogic() {
+    CmdManager::init();
     return true;
 }
 

@@ -87,7 +87,7 @@ bool Acceptor::listen() {
 
         log_trace("[%s] listen at[%s:%u] success.", m_ioCallback->name(), ep.address().to_string().c_str(), ep.port());
     } catch (boost::system::system_error& se) {
-        log_error("[%s] listen at[%s:%u] error:%s.", m_ioCallback->name(), m_listenIp.c_str(), m_listenPort);
+        log_error("[%s] listen at[%s:%u] error:%s.", m_ioCallback->name(), m_listenIp.c_str(), m_listenPort, se.what());
         return false;
     }
 

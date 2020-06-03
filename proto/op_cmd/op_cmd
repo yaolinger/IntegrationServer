@@ -1,5 +1,6 @@
 MSG_BEGIN = 1
-msg_ping
-msg_pong
+MsgPing
+MsgPong
+MsgRobot
 
 MSG_END

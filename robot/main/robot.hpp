@@ -1,18 +1,19 @@
-#ifndef SINGLE_SERVER_MAIN_SINGLE_SERVER_HPP
-#define SINGLE_SERVER_MAIN_SINGLE_SERVER_HPP
+#ifndef ROBOT_ROBOT_HPP
+#define ROBOT_ROBOT_HPP
 
+#include "boost_network/message.hpp"
+#include "logic/logic_connector.hpp"
 #include "protocpp/cmd_manager.hpp"
-#include "sentry/sentry_listener.hpp"
 #include "service_core/boost_server.hpp"
 #include "service_core/boost_msg_handler.hpp"
 
-class SingleServer : public SERVICE_CORE::BoostServer {
+class Robot : public SERVICE_CORE::BoostServer {
 public:
-    SingleServer() {}
-    ~SingleServer() {}
+    Robot() {}
+    ~Robot() {}
 
 public:
-    const char* getServerName() { return "SingleServer"; }
+    const char* getServerName() { return "Robot"; }
 
     bool onInitServer();
 
@@ -23,11 +24,13 @@ public:
     bool onInitNetwork();
 
     bool onInitLogic();
-    // 网络层回调
+
 public:
-    void onAddSentry(const BOOST_NETWORK::TcpSocketPtr& s);
-    void onDelSentry(const BOOST_NETWORK::TcpSocketPtr& s);
-    void onSentryMsg(const BOOST_NETWORK::TcpSocketPtr& s, uint16 cmd, const BOOST_NETWORK::MsgBufPtr& buf);
+    void onLogicConnect(const BOOST_NETWORK::TcpSocketPtr& s);
+
+    void onLogicMsg(const BOOST_NETWORK::TcpSocketPtr& s, uint16 cmd, const BOOST_NETWORK::MsgBufPtr& buf);
+
+    void onLogicClose(const BOOST_NETWORK::TcpSocketPtr& s);
 
 private:
     // 读取配置
@@ -36,14 +39,15 @@ private:
     bool onLoadXmlConfig();
 
 private:
-    SentryListener m_sentryListner;   // 监听
+    LogicConnector m_connector;
 
+public:
     template <typename T_MSG>
     static bool sendMsgBySocket(const BOOST_NETWORK::TcpSocketPtr& pSocket, uint16_t cmd, const T_MSG& msg);
 };
 
 template <typename T_MSG>
-bool SingleServer::sendMsgBySocket(const BOOST_NETWORK::TcpSocketPtr& pSocket, uint16_t cmd, const T_MSG& msg){
+bool Robot::sendMsgBySocket(const BOOST_NETWORK::TcpSocketPtr& pSocket, uint16_t cmd, const T_MSG& msg){
     if( NULL == pSocket) {
         log_error("send cmd[%s:%d] to server failed: NULL == p_socket", CMD_DESC(cmd), cmd);
         return false;
@@ -57,4 +61,5 @@ bool SingleServer::sendMsgBySocket(const BOOST_NETWORK::TcpSocketPtr& pSocket, u
     pSocket->write(cmd, buf);
     return true;
 }
+
 #endif

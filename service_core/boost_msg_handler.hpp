@@ -16,7 +16,7 @@ NS_SERVICE_CORE_BEGIN
 // 基于boost network
 class BoostMsgHandler {
 public:
-    typedef std::function<bool(const BOOST_NETWORK::TcpSocketPtr& s,  const BOOST_NETWORK::MsgBufPtr& buf)> MsgHandlerFunc;
+    typedef std::function<bool(const BOOST_NETWORK::TcpSocketPtr& s, const BOOST_NETWORK::MsgBufPtr& buf)> MsgHandlerFunc;
 public:
     // 协议注册
     bool registerFunc(uint16 cmd, MsgHandlerFunc func) {
@@ -41,6 +41,16 @@ public:
             log_error("Cmd[%d:%s] can not find func", cmd, CMD_DESC(cmd));
             return false;
         }
+
+        if (NULL == s) {
+            log_error("NULL == s");
+            return false;
+        }
+
+        if (NULL == buf) {
+            log_error("NULL == buf");
+            return false;
+        }
         iter->second(s, buf);
         return true;
     }
@@ -50,5 +60,15 @@ private:
 };
 
 NS_SERVICE_CORE_END
+
+// 基于MsgBuf序列化
+#define MSG_SERIALIZE_TO_MSGBUF(cmd, msg) \
+    BOOST_NETWORK::MsgBufPtr buf = std::make_shared<BOOST_NETWORK::MsgBuf>(msg.ByteSizeLong()); \
+    MSG_SERIALIZE(cmd, msg, buf->data());
+
+// 基于MsgBuf反序列化
+#define MSG_DESERIALIZE_BY_MSGBUF(cmd, MSG_T, buf) \
+    MSG_T msg; \
+    MSG_DESERIALIZE(cmd, msg, buf->data(), buf->size());
 
 #endif

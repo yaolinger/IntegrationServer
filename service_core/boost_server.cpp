@@ -39,7 +39,7 @@ bool BoostServer::initServer() {
 }
 
 bool BoostServer::runServer() {
-	if (!initSignal()) {
+    if (!initSignal()) {
 		return false;
 	}
 
@@ -55,7 +55,7 @@ bool BoostServer::runServer() {
 }
 
 bool BoostServer::closeServer() {
-	log_trace("[%s] server stoping.....", getServerName());
+	log_trace("[%s] stoping.....", getServerName());
 
 	if (!onCloseServer()) {
 		return false;

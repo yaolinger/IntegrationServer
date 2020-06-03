@@ -2,10 +2,15 @@ syntax = "proto2";
 
 package proto.server;
 
-message msg_ping {
+message MsgPing {
     optional uint32 index = 1;
 }
 
-message msg_pong {
+message MsgPong {
     optional string index = 1;
+}
+
+// 机器人测试消息
+message MsgRobot {
+    optional string test = 1;
 }

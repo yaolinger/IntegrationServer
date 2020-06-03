@@ -12,14 +12,14 @@ void TestMsg() {
 	USING_NS_PROTOCPP;
 	CmdManager::init();
 
-	proto::server::msg_ping msg;
+	proto::server::MsgPing msg;
 	msg.set_index(1);
 
 	std::vector<char> data(msg.ByteSizeLong());
-	CmdManager::msgSerialize(PROTOCPP::msg_ping, msg, &data[0]);
+	CmdManager::msgSerialize(PROTOCPP::MsgPing, msg, &data[0]);
 
-	proto::server::msg_ping seMsg;
-	CmdManager::msgDeserialize(PROTOCPP::msg_ping, seMsg, &data[0], data.size());
+	proto::server::MsgPing seMsg;
+	CmdManager::msgDeserialize(PROTOCPP::MsgPing, seMsg, &data[0], data.size());
 
 	log_debug("msg index[%u]", seMsg.index());
 }

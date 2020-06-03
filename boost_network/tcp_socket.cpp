@@ -115,7 +115,7 @@ void TcpSocket::doWrite(const TcpSocketPtr& self) {
     }
 
     // 无数据可写
-    if (!m_sendBuffer[m_idleIndex].isReadOver()) {
+    if (m_sendBuffer[m_idleIndex].isReadOver()) {
         return;
     }
 
@@ -233,6 +233,7 @@ bool TcpSocket::readParse(const TcpSocketPtr& self, uint32 recvLength) {
 }
 
 bool TcpSocket::isNeedCompress(bool isCompressed, bool isCompress, uint32 msgSize) {
+    return false;
     if (isCompressed) {
         return false;
     }
