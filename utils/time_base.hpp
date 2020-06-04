@@ -22,6 +22,9 @@ typedef std::chrono::milliseconds millisecond;
 // 微妙(us) std::ratio<1, 1000000>
 typedef std::chrono::microseconds microsecond;
 
+// 计时器粒度(500 毫秒)
+#define TIMER_MANAGER_DURING boost::posix_time::millisec(1000)
+
 NS_UTILS_END
 
 #endif
