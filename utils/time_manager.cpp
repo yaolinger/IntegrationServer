@@ -43,18 +43,45 @@ void TimerManager::onTimer(const boost::system::error_code& ec) {
 		return;
 	}
 
-    uint32 now = TimeHelper::getCurrentSecond();
-    for (auto iter : m_timerMap) {
-        if (NULL == iter.second) {
-            continue;
-        }
+    // 获取当前时间
+    int32 now = TimeHelper::getCurrentSecond();
 
-        // map key排序(由小到大)
-        if (iter.first > now) {
+    // 待执行timer vector
+    std::vector<TimerPtr> waitingRunVec;
+
+    // 获取可执行timer
+    for (auto iter = m_timerMap.begin(); iter != m_timerMap.end();) {
+        if (NULL == iter->second) {
+            iter++;
             break;
         }
 
-        iter.second->doComplete();
+        // map key排序(由小到大)
+        if (iter->first > (uint32)now) {
+            break;
+        }
+
+        // map容器遍历删除
+        // c98 map.erase(iter++)
+        // c11 map.erase(iter++)  | iter = map.erase(iter)
+        // c11 map.erase 增加了返回值
+        waitingRunVec.push_back(iter->second);
+        iter = m_timerMap.erase(iter);
+    }
+
+    // 遍历执行
+    for (TimerPtr iter : waitingRunVec) {
+        if (NULL == iter) {
+            continue;
+        }
+
+        // 执行
+        iter->doComplete();
+
+        // 可再执行重新加入容器
+        if (!iter->isOver()) {
+            m_timerMap.insert(std::make_pair(iter->getNextTime(), iter));
+        }
     }
 
     if (NULL != m_timer) {
@@ -62,6 +89,5 @@ void TimerManager::onTimer(const boost::system::error_code& ec) {
         m_timer->async_wait(boost::bind(&TimerManager::onTimer, boost::asio::placeholders::error));
     }
 }
-
 
 NS_UTILS_END

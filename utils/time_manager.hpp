@@ -42,7 +42,7 @@ public:
     void doComplete();
 public:
     // 获取下次执行时间
-    virtual void getNextTime() = 0;
+    virtual uint32 getNextTime() = 0;
 
     // 计算时间
     virtual void calcTime() = 0;
