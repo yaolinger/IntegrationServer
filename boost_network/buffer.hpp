@@ -4,6 +4,7 @@
 #include <cstring>
 #include <vector>
 #include "common.hpp"
+#include "utils/log.hpp"
 #include "utils/macros.hpp"
 
 NS_BOOST_NETWORK_BEGIN
@@ -52,6 +53,10 @@ public:
             m_curIndex = 0;
             m_rearIndex = diff;
         }
+    }
+
+    void show() {
+        log_info("cur[%u] rear[%u] max[%u]", m_curIndex, m_rearIndex, m_maxSize);
     }
 
 private:

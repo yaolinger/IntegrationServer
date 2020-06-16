@@ -1,10 +1,22 @@
 #include "sentry_manager.hpp"
 
 #include "utils/log.hpp"
+#include "protocpp/op_cmd.hpp"
+#include "protocpp/protos/server.pb.h"
+
+USING_NS_UTILS;
 
 uint64 ObjectManager::s_globalUid = 0;
+UTILS::TimerPtr ObjectManager::s_timer;
 
 std::map<uint64, ObjectPtr> ObjectManager::s_objectMap;
+
+void Object::checkActive(int32 now) {
+	if (m_activeTime + LINK_ACTIVE_TIME < now) {
+	    proto::server::MsgPing request;
+	    global::pServer->sendMsgBySocket(m_socketPtr, PROTOCPP::MsgPing, request);
+    }
+}
 
 void ObjectManager::addConnector(const BOOST_NETWORK::TcpSocketPtr& s) {
     if (NULL == s) {
@@ -31,6 +43,15 @@ void ObjectManager::delConnector(const BOOST_NETWORK::TcpSocketPtr& s) {
     }
 }
 
+bool ObjectManager::init() {
+	s_timer.reset(new UTILS::TimerBase(1));
+	s_timer->afterFunc(5, ObjectManager::onTimer);
+	return true;
+}
+
+void ObjectManager::close() {
+	s_timer->cancel();
+}
 
 bool ObjectManager::addObject(const ObjectPtr& ob) {
     if (NULL != findObject(ob->getUid())) {
@@ -63,3 +84,23 @@ uint64 ObjectManager::getIdleUid() {
     return s_globalUid++;
 }
 
+void ObjectManager::onTimer() {
+	//log_info("ObjectManager timer callback~");
+	int32 now = TimeHelper::getCurrentSecond();
+
+	for (auto iter = s_objectMap.begin(); iter != s_objectMap.end();) {
+		if (NULL == iter->second) {
+			iter++;
+			continue;
+		}
+		ObjectPtr ob = iter->second;
+		if (ob->isTimeout(now)) {
+		    global::pServer->postCloseSocket(ob->getSocketPtr());
+			iter = s_objectMap.erase(iter);
+		    continue;
+        }
+        ob->checkActive(now);
+        iter++;
+	}
+	s_timer->afterFunc(5, ObjectManager::onTimer);
+}

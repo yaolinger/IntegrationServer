@@ -9,6 +9,8 @@ public:
     static bool initMsgHandler();
 
     static bool handleMsgRobot(const BOOST_NETWORK::TcpSocketPtr& s, const BOOST_NETWORK::MsgBufPtr& buf);
+
+	static bool handleMsgPong(const BOOST_NETWORK::TcpSocketPtr& s, const BOOST_NETWORK::MsgBufPtr& buf);
 public:
     static SERVICE_CORE::BoostMsgHandler s_msgHandler;
 };

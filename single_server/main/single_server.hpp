@@ -23,6 +23,10 @@ public:
     bool onInitNetwork();
 
     bool onInitLogic();
+
+public:
+	bool closeLogic();
+
     // 网络层回调
 public:
     void onAddSentry(const BOOST_NETWORK::TcpSocketPtr& s);
@@ -38,6 +42,7 @@ private:
 private:
     SentryListener m_sentryListner;   // 监听
 
+public:
     template <typename T_MSG>
     static bool sendMsgBySocket(const BOOST_NETWORK::TcpSocketPtr& pSocket, uint16_t cmd, const T_MSG& msg);
 };
@@ -54,6 +59,8 @@ bool SingleServer::sendMsgBySocket(const BOOST_NETWORK::TcpSocketPtr& pSocket, u
         log_error("send socket[%d] cmd[%s:%d] to server failed: NULL == send_buf",  pSocket->getSocketId(), CMD_DESC(cmd), cmd);
         return false;
     }
+
+    log_trace("Send messages cmd[%s:%d]", CMD_DESC(cmd), cmd);
     pSocket->write(cmd, buf);
     return true;
 }

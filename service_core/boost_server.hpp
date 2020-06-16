@@ -49,6 +49,8 @@ public:
     bool connectTo(const std::string& ip, uint16 port, BOOST_NETWORK::ConnectorCallback* pConnectorCb, uint32 reConnectTime);
     // 关闭网络层
     void closeNetwork();
+	// 主动关闭socket
+	void postCloseSocket(const BOOST_NETWORK::TcpSocketPtr& s);
 
 public:
 	boost::asio::io_service& getIos() { return m_ios; }

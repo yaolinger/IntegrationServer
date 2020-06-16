@@ -22,11 +22,11 @@ enum PACKET_FLAG {
 };
 
 // 动态缓存区基础buffer长度
-#define DYNAMIC_BUFF_BASE_SIZE 64 * 1024
+#define DYNAMIC_BUFF_BASE_SIZE (64 * 1024)
 // 动态扩展倍数计算式
 #define DYNAMIC_BUFF_EXPAND_TIMES(size) (size + DYNAMIC_BUFF_BASE_SIZE -1) / DYNAMIC_BUFF_BASE_SIZE
 // 静态缓存区buffer长度
-#define STATIC_BUFF_MAX_SIZE 64 * 10 * 1024
+#define STATIC_BUFF_MAX_SIZE (64 * 10 * 1024)
 
 // 数据包最大长度(65535)
 static const uint32 PACKET_MAX_SIZE = 64 * 1024 - 1;

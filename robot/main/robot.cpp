@@ -74,11 +74,10 @@ void Robot::onLogicConnect(const BOOST_NETWORK::TcpSocketPtr& s) {
     proto::server::MsgRobot msg;
     msg.set_test("滴滴滴 机器人来啦");
     sendMsgBySocket(s, MsgRobot, msg);
-    log_info("Test msg robot");
 }
 
 void Robot::onLogicMsg(const BOOST_NETWORK::TcpSocketPtr& s, uint16 cmd, const BOOST_NETWORK::MsgBufPtr& buf) {
-    LogicMsgHandler::s_msgHandler.msgHandler(s, cmd, buf);
+    LogicMsgHandler::s_msgHandler.msgHandler(s, cmd, buf, m_connector.name());
 }
 
 void Robot::onLogicClose(const BOOST_NETWORK::TcpSocketPtr& s) {

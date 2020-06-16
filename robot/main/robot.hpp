@@ -58,6 +58,7 @@ bool Robot::sendMsgBySocket(const BOOST_NETWORK::TcpSocketPtr& pSocket, uint16_t
         log_error("send socket[%d] cmd[%s:%d] to server failed: NULL == send_buf",  pSocket->getSocketId(), CMD_DESC(cmd), cmd);
         return false;
     }
+    log_trace("Send messages cmd[%s:%d]", CMD_DESC(cmd), cmd);
     pSocket->write(cmd, buf);
     return true;
 }

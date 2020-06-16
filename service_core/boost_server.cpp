@@ -112,4 +112,8 @@ void BoostServer::closeNetwork() {
 	m_network.close();
 }
 
+void BoostServer::postCloseSocket(const BOOST_NETWORK::TcpSocketPtr& s) {
+	m_network.postCloseSocket(s);
+}
+
 NS_SERVICE_CORE_END

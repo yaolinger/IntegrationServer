@@ -2,6 +2,7 @@
 #include "utils/time_helper.hpp"
 #include "test_utils/test_thread.hpp"
 #include "test_utils/test_time.hpp"
+#include "test_utils/test_timer.hpp"
 #include "test_protocpp/test_msg.hpp"
 
 void baseInit() {
@@ -16,13 +17,16 @@ int main() {
     baseInit();
 
 	// test thread
-	TestThread();
+	// TestThread();
 
-    // test timer
-    TestTimer();
+    // test time
+    // TestTime();
+
+	// test timer
+	TestTimer();
 
 	// test msg
-	TestMsg();
+	// TestMsg();
 
     return 0;
 }

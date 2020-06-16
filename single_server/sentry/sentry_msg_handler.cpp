@@ -9,7 +9,8 @@ SERVICE_CORE::BoostMsgHandler SentryMsgHandler::s_msgHandler;
 bool SentryMsgHandler::initMsgHandler() {
     bool ret = true;
     ret &= s_msgHandler.registerFunc(PROTOCPP::MsgRobot, handleMsgRobot);
-    return ret;
+    ret &= s_msgHandler.registerFunc(PROTOCPP::MsgPong, handleMsgPong);
+	return ret;
 }
 
 bool SentryMsgHandler::handleMsgRobot(const BOOST_NETWORK::TcpSocketPtr& s, const BOOST_NETWORK::MsgBufPtr& buf) {
@@ -24,4 +25,17 @@ bool SentryMsgHandler::handleMsgRobot(const BOOST_NETWORK::TcpSocketPtr& s, cons
     log_info("Robot[%u] recv[%s]", pOb->getUid(), msg.test().c_str());
 
     return true;
+}
+
+bool SentryMsgHandler::handleMsgPong(const BOOST_NETWORK::TcpSocketPtr& s, const BOOST_NETWORK::MsgBufPtr& buf) {
+    auto pOb = ObjectManager::findObject(s->getBindUid());
+    if (NULL == pOb) {
+        log_error("NULL == pOb at socket[%d][%s:%u]", s->getSocketId(), s->getIp(), s->getPort());
+        return false;
+    }
+
+    // 反序列化数据
+    MSG_DESERIALIZE_BY_MSGBUF(PROTOCPP::MsgPong, proto::server::MsgPong, buf);
+	pOb->setActive();
+	return true;
 }

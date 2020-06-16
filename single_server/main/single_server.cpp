@@ -7,6 +7,7 @@
 #include "sentry/sentry_manager.hpp"
 #include "sentry/sentry_msg_handler.hpp"
 #include "utils/time_helper.hpp"
+#include "utils/time_manager.hpp"
 #include "utils/log.hpp"
 
 USING_NS_UTILS
@@ -37,8 +38,15 @@ void SingleServer::onRunServer() {
 }
 
 bool SingleServer::onCloseServer() {
-    closeNetwork();
+    closeLogic();
+	closeNetwork();
     return true;
+}
+
+bool SingleServer::closeLogic() {
+	ObjectManager::close();
+	TimerManager::cancel();
+	return true;
 }
 
 bool SingleServer::onLoadConfig() {
@@ -64,7 +72,10 @@ bool SingleServer::onInitNetwork() {
 
 bool SingleServer::onInitLogic() {
     CmdManager::init();
-    return true;
+	TimerManager::init(getIos());
+
+	ObjectManager::init();
+	return true;
 }
 
 bool SingleServer::onLoadXmlConfig() {
@@ -80,6 +91,6 @@ void SingleServer::onDelSentry(const TcpSocketPtr& s) {
 }
 
 void SingleServer::onSentryMsg(const TcpSocketPtr& s, uint16 cmd, const MsgBufPtr& buf) {
-    SentryMsgHandler::s_msgHandler.msgHandler(s, cmd, buf);
+    SentryMsgHandler::s_msgHandler.msgHandler(s, cmd, buf, m_sentryListner.name());
 }
 

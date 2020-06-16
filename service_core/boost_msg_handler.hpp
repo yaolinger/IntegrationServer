@@ -35,10 +35,10 @@ public:
     }
 
     // 消息处理
-    bool msgHandler(const BOOST_NETWORK::TcpSocketPtr& s, uint16 cmd, const BOOST_NETWORK::MsgBufPtr& buf) {
+    bool msgHandler(const BOOST_NETWORK::TcpSocketPtr& s, uint16 cmd, const BOOST_NETWORK::MsgBufPtr& buf, const char* name) {
         auto iter = m_funcMap.find(cmd);
         if (iter == m_funcMap.end() || NULL == iter->second) {
-            log_error("Cmd[%d:%s] can not find func", cmd, CMD_DESC(cmd));
+            log_error("Cmd[%s:%d] can not find func", CMD_DESC(cmd), cmd);
             return false;
         }
 
@@ -51,6 +51,8 @@ public:
             log_error("NULL == buf");
             return false;
         }
+
+        log_trace("Recv messages cmd[%s:%d] from %s[%lu]", CMD_DESC(cmd), cmd, name, s->getBindUid());
         iter->second(s, buf);
         return true;
     }

@@ -57,7 +57,8 @@ void TcpSocket::write(uint16 cmd, const MsgBufPtr& buf, bool isCompress) {
                     // 尝试调整缓存区大小
                     m_sendBuffer[m_idleIndex].reserve(msgAllSize);
                     if (m_sendBuffer[m_idleIndex].getWriteSize() < msgAllSize) {
-                        log_error("Socket[%u] cmd[%u] write size[%u] < msg all size[%u]", m_socketId, cmd, m_sendBuffer[m_idleIndex].getWriteSize(), msgAllSize);
+                        log_error("Socket[%u] cmd[%u] write size[%u] < msg all size[%u] on idle[%u]", m_socketId, cmd, m_sendBuffer[m_idleIndex].getWriteSize(), msgAllSize, m_idleIndex);
+                        m_sendBuffer[m_idleIndex].show();
                         return;
                     }
                     // 填充头包数据

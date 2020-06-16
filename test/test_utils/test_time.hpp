@@ -4,7 +4,7 @@
 #include "utils/time_helper.hpp"
 #include "utils/log.hpp"
 
-void TestTimer() {
+void TestTime() {
    USING_NS_UTILS
    StopWatch sw;
 
