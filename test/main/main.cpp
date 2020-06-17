@@ -1,5 +1,6 @@
 #include "utils/log.hpp"
 #include "utils/time_helper.hpp"
+#include "test_utils/test_rand.hpp"
 #include "test_utils/test_thread.hpp"
 #include "test_utils/test_time.hpp"
 #include "test_utils/test_timer.hpp"
@@ -23,10 +24,14 @@ int main() {
     // TestTime();
 
 	// test timer
-	TestTimer();
+	// TestTimer();
 
 	// test msg
 	// TestMsg();
+
+    // test rand
+    TestRand();
+
 
     return 0;
 }
