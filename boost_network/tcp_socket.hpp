@@ -89,6 +89,8 @@ private:
     IoInterface* m_ioInterface = NULL;      // io对象
 
     uint64 m_bindUid = 0;            // 绑定id
+
+    bool m_closeFlag = false;        // 关闭标识
 };
 
 typedef std::shared_ptr<TcpSocket> TcpSocketPtr;

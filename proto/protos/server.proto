@@ -14,3 +14,12 @@ message MsgPong {
 message MsgRobot {
     optional string test = 1;
 }
+
+// tcp测试包
+message MsgTestTcpRequest {
+    optional uint32 count = 1;
+}
+
+message MsgTestTcpReply {
+    optional string test = 1;
+}

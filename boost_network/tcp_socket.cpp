@@ -21,6 +21,7 @@ TcpSocket::TcpSocket(boost::asio::io_service & ios, boost::asio::ip::tcp::socket
         , m_port(addr.port())
         , m_ip(addr.address().to_string())
         , m_ioInterface(pIoInterface)
+        , m_closeFlag(false)
 {
         // 关闭nagle算法
         m_socket.set_option(boost::asio::ip::tcp::no_delay(true));
@@ -42,6 +43,10 @@ void TcpSocket::read() {
 void TcpSocket::write(uint16 cmd, const MsgBufPtr& buf, bool isCompress) {
     auto self(shared_from_this());
     m_strand.post([this, self, cmd, buf, isCompress]() {
+                if (m_closeFlag) {
+                    log_error("Socket[%u] stop write closeFlag[%d]", self->getSocketId(), m_closeFlag);
+                    return;
+                }
                 bool needCompress = isNeedCompress(buf->isCompress(), isCompress, buf->size());
                 if (needCompress) {
                     // TODO: 压缩处理
@@ -82,10 +87,13 @@ void TcpSocket::write(uint16 cmd, const MsgBufPtr& buf, bool isCompress) {
 void TcpSocket::close() {
    auto self(shared_from_this());
    m_strand.post([this, self]() {
-                // TODO: 是否处理未发送成功数据包
+                m_closeFlag = true;
 
-				m_notifyCallback = false;
-				doClose(self);
+                // 非异步写入状态直接关闭
+                if (!m_asyncWriting) {
+                	m_notifyCallback = false;
+				    doClose(self);
+                }
            });
 }
 
@@ -93,6 +101,11 @@ void TcpSocket::doRead(const TcpSocketPtr& self) {
     m_socket.async_read_some(boost::asio::buffer(m_recvBuffer.getWritePos(), m_recvBuffer.getWriteSize()),
             m_strand.wrap([this, self](boost::system::error_code ec, std::size_t recvLength) {
                     do {
+                        if (m_closeFlag) {
+                            log_warn("Socket[%u] stop read closeFlag[%d]", self->getSocketId(), m_closeFlag);
+                            break;
+                        }
+
                         if (ec) {
                             onReadError(self, ec);
                             break;
@@ -117,6 +130,10 @@ void TcpSocket::doWrite(const TcpSocketPtr& self) {
 
     // 无数据可写
     if (m_sendBuffer[m_idleIndex].isReadOver()) {
+        // 数据全部写入 关闭socket
+        if (m_closeFlag) {
+            m_strand.post([this, self]() { m_notifyCallback = false; doClose(self); });
+        }
         return;
     }
 

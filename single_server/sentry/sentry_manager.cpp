@@ -18,6 +18,16 @@ void Object::checkActive(int32 now) {
     }
 }
 
+void Object::testLimitTcp(uint32 times) {
+    do {
+        times--;
+        proto::server::MsgTestTcpReply reply;
+	    global::pServer->sendMsgBySocket(m_socketPtr, PROTOCPP::MsgTestTcpReply, reply);
+    } while(times > 0);
+    global::pServer->postCloseSocket(m_socketPtr);
+    ObjectManager::delConnector(m_socketPtr);
+}
+
 void ObjectManager::addConnector(const BOOST_NETWORK::TcpSocketPtr& s) {
     if (NULL == s) {
         log_error("NULL == s");

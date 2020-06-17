@@ -30,6 +30,12 @@ public:
 
 	void setActive() { m_activeTime = UTILS::TimeHelper::getCurrentSecond(); }
 
+public:
+    // tcp 极限测试
+    // 连续发包 立即关闭链接测试
+    // 目的:保证关闭链接前的数据全部发送
+    void testLimitTcp(uint32 times);
+
 private:
 	BOOST_NETWORK::TcpSocketPtr m_socketPtr;      // socket
 	uint64 m_uid;                                 // 唯一id

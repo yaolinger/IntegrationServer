@@ -2,5 +2,7 @@ MSG_BEGIN = 1
 MsgPing
 MsgPong
 MsgRobot
+MsgTestTcpRequest
+MsgTestTcpReply
 
 MSG_END

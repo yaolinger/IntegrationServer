@@ -10,6 +10,7 @@ SERVICE_CORE::BoostMsgHandler LogicMsgHandler::s_msgHandler;
 bool LogicMsgHandler::initMsgHandler() {
     bool ret = true;
     ret &= s_msgHandler.registerFunc(PROTOCPP::MsgPing, handleMsgPing);
+    ret &= s_msgHandler.registerFunc(PROTOCPP::MsgTestTcpReply, handleMsgTestTcpReply);
     return true;
 }
 
@@ -19,5 +20,14 @@ bool LogicMsgHandler::handleMsgPing(const BOOST_NETWORK::TcpSocketPtr& s, const 
 
     proto::server::MsgPong reply;
     global::pRobot->sendMsgBySocket(s, PROTOCPP::MsgPong, reply);
+    return true;
+}
+
+bool LogicMsgHandler::handleMsgTestTcpReply(const BOOST_NETWORK::TcpSocketPtr& s, const BOOST_NETWORK::MsgBufPtr& buf) {
+    // 反序列化数据
+    MSG_DESERIALIZE_BY_MSGBUF(PROTOCPP::MsgTestTcpReply, proto::server::MsgTestTcpReply, buf);
+
+    log_debug("Robot test tcp messsages");
+
     return true;
 }

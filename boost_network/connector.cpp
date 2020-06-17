@@ -26,7 +26,7 @@ void Connector::onReadError(const TcpSocketPtr& s, const boost::system::error_co
 		log_error("NULL == s");
 		return;
 	}
-	log_error("[%s] disconnect to socket[%u][%s:%u], error[%d:%s]", m_ioCallback->name(), m_socketPtr->getSocketId(), m_ip.c_str(), m_port, ec.value(), ec.message().c_str());
+	log_error("[%s] disconnect to socket[%u][%s:%u], error[%d:%s]", m_ioCallback->name(), s->getSocketId(), m_ip.c_str(), m_port, ec.value(), ec.message().c_str());
 }
 
 void Connector::onWriteError(const TcpSocketPtr& s, const boost::system::error_code& ec) {
@@ -34,7 +34,7 @@ void Connector::onWriteError(const TcpSocketPtr& s, const boost::system::error_c
 		log_error("NULL == s");
 		return;
 	}
-	log_error("[%s] disconnect to socket[%u][%s:%u], error[%d:%s]", m_ioCallback->name(), m_socketPtr->getSocketId(), m_ip.c_str(), m_port, ec.value(), ec.message().c_str());
+	log_error("[%s] disconnect to socket[%u][%s:%u], error[%d:%s]", m_ioCallback->name(), s->getSocketId(), m_ip.c_str(), m_port, ec.value(), ec.message().c_str());
 }
 
 void Connector::onActiveSocketClose(const TcpSocketPtr& s) {

@@ -10,6 +10,7 @@ public:
 
     static bool handleMsgPing(const BOOST_NETWORK::TcpSocketPtr& s, const BOOST_NETWORK::MsgBufPtr& buf);
 
+    static bool handleMsgTestTcpReply(const BOOST_NETWORK::TcpSocketPtr& s, const BOOST_NETWORK::MsgBufPtr& buf);
 public:
     static SERVICE_CORE::BoostMsgHandler s_msgHandler;
 };
