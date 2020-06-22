@@ -3,8 +3,13 @@
 
 ## 总览
 编码主体采用c++11  
+编译器版本: gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.10)  
 目前支持主体模块: proto protocpp utils boost_network test single_server robot  
-编译运行环境搭建: git clone https://github.com/yaolinger/env_script.git
+项目部署顺序:  
+1. 代码拉取: git clone https://github.com/yaolinger/IntegrationServer.git  
+2. 编译运行环境脚本拉取: git clone https://github.com/yaolinger/env_script.git  
+3. 阅读并生成代码环境: https://github.com/yaolinger/env_script/blob/master/README.md  
+4. 进入工作目录编译: make -j  
 
 ## Proto
 通讯协议序列化方案采用protobuf  
