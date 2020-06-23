@@ -2,18 +2,22 @@
 个人整合服务端  
 
 ## 总览
-编码主体采用c++11  
+编码主体采用: c++11  
 编译器版本: gcc version 5.4.0  
+python版本: 2.7.12  
+python第三方: mako  
 目前支持主体模块: proto protocpp utils boost_network test single_server robot  
-项目部署顺序:  
+项目部署:  
 1. 代码拉取: git clone https://github.com/yaolinger/IntegrationServer.git  
 2. 编译运行环境脚本拉取: git clone https://github.com/yaolinger/env_script.git  
-3. 阅读并生成代码环境: https://github.com/yaolinger/env_script/blob/master/README.md  
-4. 进入工作目录编译: make -j  
+3. 编译前保证gcc版本  
+4. 第三方环境搭建: https://github.com/yaolinger/env_script/blob/master/README.md  
+5. 进入工作目录编译: make -j  
 
 ## Proto
 通讯协议序列化方案采用protobuf  
 执行脚本 bash gen_proto.sh 生成协议枚举,协议代码文件  
+代码生成依赖于python, 需要搭建python环境及其所需的依赖库  
 * protos 目录内为.proto协议  
 * op_cmd 目录内为数据源及协议枚举文件模板  
   
