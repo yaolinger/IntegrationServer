@@ -1,5 +1,6 @@
 #include "utils/log.hpp"
 #include "utils/time_helper.hpp"
+#include "test_utils/test_scheduler.hpp"
 #include "test_utils/test_rand.hpp"
 #include "test_utils/test_thread.hpp"
 #include "test_utils/test_time.hpp"
@@ -30,8 +31,10 @@ int main() {
 	// TestMsg();
 
     // test rand
-    TestRand();
+    //TestRand();
 
+    // test Scheduler
+    TestScheduler();
 
     return 0;
 }
