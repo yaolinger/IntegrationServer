@@ -56,9 +56,6 @@ private:
     // 消费者
     void consumerFunc();
 
-    // 其他(异常处理等)
-    void otherFunc();
-
     // 工作开始等待
     void startWait();
 

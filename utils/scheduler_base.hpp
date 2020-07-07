@@ -2,6 +2,7 @@
 #define UTILS_SCHEDULER_BASE_HPP
 
 #include <functional>
+#include <list>
 #include <memory>
 
 #include "macros.hpp"
@@ -27,6 +28,14 @@ public:
 
     virtual void post(UnitPtr& pUnit) = 0;
 };
+
+// 反应堆基础
+class ReactorBase {
+public:
+    virtual void reactorWait(std::list<UnitPtr>& taskList) = 0;
+};
+
+typedef std::shared_ptr<ReactorBase> ReactorPtr;
 
 NS_UTILS_END
 

@@ -28,6 +28,19 @@ void SchedulerList::pushWithoutNofity(UnitPtr& ptr) {
     m_taskList.push_back(ptr);
 }
 
+void SchedulerList::pushBatchWithNotify(std::list<UnitPtr>& taskList) {
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_taskList.splice(m_taskList.end(), taskList);
+    }
+    m_cond.notify_one();
+}
+
+void SchedulerList::pushBatchWithoutNotify(std::list<UnitPtr>& taskList) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_taskList.splice(m_taskList.end(), taskList);
+}
+
 UnitPtr SchedulerList::getTast() {
     std::lock_guard<std::mutex> lock(m_mutex);
     if (m_taskList.size() == 0) {

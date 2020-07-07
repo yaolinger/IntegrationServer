@@ -19,9 +19,10 @@ void TestScheduler() {
     ThreadPool pool;
     pool.createThread([&s](){ s.workThreadFunc(); }, 3);
     s.start();
-
     uint32 unSafetimes = 10;
     uint32 times = 10;
+
+    // test SchdeulerUnit
     pool.createThread([&s, &unSafetimes](){
                UnitPtr pUnit = std::make_shared<SchdeulerUnit>([&unSafetimes, &s]() {
                        --unSafetimes;
@@ -35,6 +36,7 @@ void TestScheduler() {
                }
             },1);
 
+    // test SchdelerSafeUnit
     pool.createThread([&s, &times]() {
                 std::shared_ptr<SchdelerSafeUnit> ssup = std::make_shared<SchdelerSafeUnit>(s);
                 uint32 count = times;

@@ -1,5 +1,5 @@
 #include "scheduler.hpp"
-#include "log.hpp"
+
 NS_UTILS_BEGIN
 
 Scheduler::Scheduler(uint32 mode) {
@@ -50,7 +50,6 @@ void Scheduler::reactorThreadFunc() {
     do {
         producerFunc();
         timerFunc();
-        otherFunc();
     } while(m_reactorStart);
 }
 
@@ -69,10 +68,6 @@ void Scheduler::consumerFunc() {
     } else if (m_workStart) {
         m_workList.wait();
     }
-}
-
-void Scheduler::otherFunc() {
-    // TODO
 }
 
 void Scheduler::startWait() {

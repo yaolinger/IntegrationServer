@@ -25,6 +25,12 @@ public:
     // 添加任务(不激活)
     void pushWithoutNofity(UnitPtr& ptr);
 
+    // 批量添加任务(激活)
+    void pushBatchWithNotify(std::list<UnitPtr>& taskList);
+
+    // 批量添加任务(不激活)
+    void pushBatchWithoutNotify(std::list<UnitPtr>& taskList);
+
     // 获取任务(一个)
     UnitPtr getTast();
 
