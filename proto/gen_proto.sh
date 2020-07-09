@@ -8,13 +8,14 @@ TEMPLATE_CMD_MANAGER_FILE=./op_cmd/template_cmd_manager.cc
 TARGET_CMD_MANAGER_FILE=cmd_manager.cc
 COPY_FILE=./op_cmd/cmd_manager.hpp
 COPY_TARGET_FILE=cmd_manager.hpp
+PROTOC=/usr/integration_server_third/bin/protoc
 
 FILES=$(find ./ -name "*.proto")
 
 for FILE in $FILES
 do
-   echo protoc --cpp_out=$OUT_DIR $FILE
-   ./protos/protoc --cpp_out=$OUT_DIR $FILE
+   echo $PROTOC --cpp_out=$OUT_DIR $FILE
+   $PROTOC --cpp_out=$OUT_DIR $FILE
 done
 
 #生成op_cmd.hpp
