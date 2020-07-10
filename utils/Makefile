@@ -2,7 +2,7 @@ include ../Makefile.config
 
 LIB = $(BASE_LIB)
 LIB_PATH = $(BASE_LIB_PATH)
-INCLUDE = $(BASE_INCLUDE) -I. -I..
+INCLUDE = $(BASE_INCLUDE) -I. -I.. -I/usr/integration_server_third/include/zdb
 
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:%.cpp=%.o)
