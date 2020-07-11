@@ -1,8 +1,8 @@
 include ../Makefile.config
 
-INCLUDE=$(BASE_INCLUDE) -I. -I.. -I../..
+INCLUDE=$(BASE_INCLUDE) -I. -I.. -I../.. -I/usr/integration_server_third/include/zdb
 LIB_PATH=$(BASE_LIB_PATH)
-LIB=$(BASE_LIB) -lprotobuf -lboost_system
+LIB=$(BASE_LIB) -lprotobuf -lboost_system -lzdb
 USER_LIB=../utils/libutils.a ../protocpp/libprotocpp.a
 
 SRCS=$(wildcard */*.cpp */*.zjx)

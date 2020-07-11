@@ -53,7 +53,7 @@ bool DBConnectionPool::init(DB_KIND kind, uint32 connMaxCount, uint32 initCount,
     ConnectionPool_setAbortHandler(m_pool, [](const char* error){ log_error("Connection pool error:%s", error); });
     ConnectionPool_start(m_pool);
 
-    log_info("Db[%s:%s:%s] connection pool init[%u:%u]success.", dbKind.c_str(), host.c_str(), db.c_str(), initCount, connMaxCount);
+    log_info("Db[%s:%s:%s] connection pool init success, init count[%u] max count[%u].", dbKind.c_str(), host.c_str(), db.c_str(), initCount, connMaxCount);
     return true;
 }
 
@@ -122,7 +122,6 @@ void DBConnectionPool::execFunc(std::string& error, std::function<void(Connectio
     }
     END_TRY;
     Connection_close(conn);
-
 }
 
 void DBConnectionPool::close() {
