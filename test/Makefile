@@ -5,7 +5,7 @@ LIB_PATH=$(BASE_LIB_PATH)
 LIB=$(BASE_LIB) -lprotobuf -lboost_system -lzdb
 USER_LIB=../utils/libutils.a ../protocpp/libprotocpp.a
 
-SRCS=$(wildcard */*.cpp */*.zjx)
+SRCS=$(wildcard */*.cpp)
 OBJS=$(SRCS:.cpp=.o)
 DEPS=$(SRCS:.cpp=.d)
 
