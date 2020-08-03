@@ -102,6 +102,47 @@ void DBConnectionPool::execQuery(const std::string& sql, std::string& error, std
     Connection_close(conn);
 }
 
+void DBConnectionPool::execQuery(const std::string& sql, const std::vector<std::pair<uint32, std::string>>& paramVec, std::string& error, std::function<void(ResultSet_T result)> func) {
+    Connection_T conn = ConnectionPool_getConnection(m_pool);
+    if (NULL == conn) {
+        error = DB_CONN_IS_NULL;
+        return;
+    }
+
+    TRY
+    {
+        PreparedStatement_T ps = Connection_prepareStatement(conn, "%s", sql.c_str());
+        for (uint32 i = 0; i < paramVec.size(); i++) {
+            switch (paramVec.at(i).first) {
+                case DATE_TYPE_STRING:
+                    PreparedStatement_setString(ps, i+1, paramVec.at(i).second.c_str());
+                    break;
+                case DATA_TYPE_INT:
+                case DATA_TYPE_LLONG:
+                case DATA_TYPE_DOUBLE:
+                case DATA_TYPE_TIMESTAMP:
+                    break;
+                case DATA_TYPE_BLOB:
+                    PreparedStatement_setBlob(ps, i+1, paramVec.at(i).second.c_str(),  paramVec.at(i).second.size());
+                    break;
+            }
+        }
+
+        ResultSet_T result = PreparedStatement_executeQuery(ps);
+        func(result);
+        error = DB_EXEC_SUCCESS;
+    }
+    CATCH(SQLException)
+    {
+        char buf[DB_ERROR_LEN] = {0};
+        snprintf(buf, sizeof(buf), "exec sql error:%s", Exception_frame.message);
+        error = buf;
+    }
+    END_TRY;
+    Connection_close(conn);
+
+}
+
 void DBConnectionPool::execFunc(std::string& error, std::function<void(Connection_T conn)> func) {
     Connection_T conn = ConnectionPool_getConnection(m_pool);
     if (NULL == conn) {

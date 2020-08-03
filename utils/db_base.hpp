@@ -23,6 +23,16 @@ enum DB_KIND {
     DB_KIND_ORACLE = 4,          // oracle
 };
 
+// 数据类型
+enum DATA_TYPE {
+    DATE_TYPE_STRING = 1,
+    DATA_TYPE_INT = 2,
+    DATA_TYPE_LLONG = 3,
+    DATA_TYPE_DOUBLE = 4,
+    DATA_TYPE_BLOB = 5,
+    DATA_TYPE_TIMESTAMP = 6,
+};
+
 NS_UTILS_END
 
 #endif

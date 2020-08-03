@@ -8,6 +8,7 @@
 #include "utils/log.hpp"
 #include "utils/log_helper.hpp"
 #include "utils/macros.hpp"
+#include "utils/thread_pool.hpp"
 
 class DBObserver : public UTILS::DBObserverBase {
 public:
@@ -31,24 +32,35 @@ void TestDBConnectionPool() {
     dbPool.init(DB_KIND_MYSQL, maxCount, initCount, timeout, host, db, user, password);
 
     DBObserver ob;
-    std::this_thread::sleep_for(std::chrono::seconds(5));
     ob.look(dbPool);
+  //  std::this_thread::sleep_for(std::chrono::seconds(1));
+  //  for (uint32 i = 0; i < maxCount; i++) {
+  //      std::string error;
+  //      std::string sql("insert into id_value (id, value) values(1, 'yin tree si ting')");
+  //      dbPool.exec(sql, error);
+  //      dbPool.exec(sql, error);
+  //      dbPool.exec(sql, error);
+  //   // dbPool.execQuery(sql, error, [](ResultSet_T result) {} );
+  //   // dbPool.execFunc(error, [&ob, &dbPool](Connection_T conn){
+  //   //          log_debug("ping[%d]", Connection_ping(conn));
+  //   //          ob.look(dbPool); });
+  //      if (error != DB_EXEC_SUCCESS) {
+  //          log_error("result:%s", error.c_str());
+  //      }
+  //      ob.look(dbPool);
 
-    for (uint32 i = 0; i < maxCount; i++) {
+    // 多线程执行sql
+    auto func = [&ob, &dbPool]() {
         std::string error;
         std::string sql("insert into id_value (id, value) values(1, 'yin tree si ting')");
         dbPool.exec(sql, error);
-     // dbPool.execQuery(sql, error, [](ResultSet_T result) {} );
-     // dbPool.execFunc(error, [&ob, &dbPool](Connection_T conn){
-     //          log_debug("ping[%d]", Connection_ping(conn));
-     //          ob.look(dbPool); });
-        if (error != DB_EXEC_SUCCESS) {
-            log_error("result:%s", error.c_str());
-        }
         ob.look(dbPool);
-    }
+    };
+    ThreadPool pool;
+	pool.createThread(func, 10);
+	pool.join();
+
     dbPool.close();
 }
-
 
 #endif

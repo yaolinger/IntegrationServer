@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <functional>
+#include <vector>
 #include <string>
 #include <zdb.h>
 
@@ -27,6 +28,9 @@ public:
 
     // 执行查询语句(select等有结果集的操作)
     void execQuery(const std::string& sql, std::string& error, std::function<void(ResultSet_T result)> func);
+
+    // 执行查询语句(select等有结果集的操作)
+    void execQuery(const std::string& sql, const std::vector<std::pair<uint32, std::string>>& paramVec, std::string& error, std::function<void(ResultSet_T result)> func);
 
     // 执行外部函数(不可传入异步函数)
     void execFunc(std::string& error, std::function<void(Connection_T conn)> func);
