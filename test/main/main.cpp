@@ -1,5 +1,6 @@
 #include "utils/log.hpp"
 #include "utils/time_helper.hpp"
+#include "test_utils/test_calc_tool.hpp"
 #include "test_utils/test_db_connection_pool.hpp"
 #include "test_utils/test_scheduler.hpp"
 #include "test_utils/test_scheduler_lf.hpp"
@@ -41,7 +42,10 @@ int main() {
     // test SchedulerLF
     // TestSchedulerLF();
 
+    // test calc tool
+    TestCalcTool();
+
     // test DBConnectionPool
-    TestDBConnectionPool();
+    //TestDBConnectionPool();
     return 0;
 }
