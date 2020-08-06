@@ -2,6 +2,7 @@
 #include "utils/time_helper.hpp"
 #include "test_utils/test_calc_tool.hpp"
 #include "test_utils/test_db_connection_pool.hpp"
+#include "test_utils/test_db_manager.hpp"
 #include "test_utils/test_scheduler.hpp"
 #include "test_utils/test_scheduler_lf.hpp"
 #include "test_utils/test_rand.hpp"
@@ -43,9 +44,12 @@ int main() {
     // TestSchedulerLF();
 
     // test calc tool
-    TestCalcTool();
+    // TestCalcTool();
 
     // test DBConnectionPool
-    //TestDBConnectionPool();
+    // TestDBConnectionPool();
+
+    // test DBManager
+    // TestDBManager();
     return 0;
 }
