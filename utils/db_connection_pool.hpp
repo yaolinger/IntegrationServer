@@ -24,13 +24,13 @@ public:
 
     // 执行语句(update, delete, insert 等无结果集的操作)
     // 带有结果集的操作, Connection_close(conn)后, 无法再次获得链接, 只能等待超时关闭
-    void exec(const std::string& sql, std::string& error);
+    void exec(std::string& error, const char* format, ...);
 
     // 执行查询语句(select等有结果集的操作)
-    void execQuery(const std::string& sql, std::string& error, std::function<void(ResultSet_T result)> func);
+    void execQuery(std::string& error, std::function<void(ResultSet_T result)> func, const char* format, ...);
 
-    // 执行查询语句(select等有结果集的操作)
-    void execQuery(const std::string& sql, const std::vector<std::pair<uint32, std::string>>& paramVec, std::string& error, std::function<void(ResultSet_T result)> func);
+    // 执行查询语句(mysql预处理语句,select等有结果集的操作)
+    void execQuery(std::string& error, std::function<void(ResultSet_T result)> func, const std::vector<std::pair<uint32, std::string>>& paramVec, const char* format, ...);
 
     // 执行外部函数(不可传入异步函数)
     void execFunc(std::string& error, std::function<void(Connection_T conn)> func);

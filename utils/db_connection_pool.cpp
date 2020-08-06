@@ -1,5 +1,8 @@
 #include "db_connection_pool.hpp"
 
+#include <stdarg.h>
+
+#include "calc_tool.hpp"
 #include "log.hpp"
 
 NS_UTILS_BEGIN
@@ -57,70 +60,100 @@ bool DBConnectionPool::init(DB_KIND kind, uint32 connMaxCount, uint32 initCount,
     return true;
 }
 
-void DBConnectionPool::exec(const std::string& sql, std::string& error) {
+void DBConnectionPool::exec(std::string& error, const char* format, ...) {
     Connection_T conn = ConnectionPool_getConnection(m_pool);
     if (NULL == conn) {
         error = DB_CONN_IS_NULL;
         return;
     }
+    char sql[SQL_MAX_LEN] = {0};
+    va_list args;
+    va_start(args, format);
+    std::vsnprintf(sql, SQL_MAX_LEN - 1, format, args);
+	va_end(args);
 
     TRY
     {
-        Connection_execute(conn, "%s", sql.c_str());
+        Connection_execute(conn, "%s", sql);
         error = DB_EXEC_SUCCESS;
     }
     CATCH(SQLException)
     {
         char buf[DB_ERROR_LEN] = {0};
-        snprintf(buf, sizeof(buf), "exec sql error:%s", Exception_frame.message);
+        snprintf(buf, sizeof(buf), "Sql[%s] error:[%s]", sql, Exception_frame.message);
         error = buf;
     }
     END_TRY;
+	va_end(args);
     Connection_close(conn);
 }
 
-void DBConnectionPool::execQuery(const std::string& sql, std::string& error, std::function<void(ResultSet_T result)> func) {
+void DBConnectionPool::execQuery(std::string& error, std::function<void(ResultSet_T result)> func, const char* format, ...) {
     Connection_T conn = ConnectionPool_getConnection(m_pool);
     if (NULL == conn) {
         error = DB_CONN_IS_NULL;
         return;
     }
+    char sql[SQL_MAX_LEN] = {0};
+    va_list args;
+    va_start(args, format);
+    std::vsnprintf(sql, SQL_MAX_LEN - 1, format, args);
+	va_end(args);
 
     TRY
     {
-        ResultSet_T result = Connection_executeQuery(conn, "%s", sql.c_str());
+        ResultSet_T result = Connection_executeQuery(conn, "%s", sql);
         func(result);
         error = DB_EXEC_SUCCESS;
     }
     CATCH(SQLException)
     {
         char buf[DB_ERROR_LEN] = {0};
-        snprintf(buf, sizeof(buf), "exec sql error:%s", Exception_frame.message);
+        snprintf(buf, sizeof(buf), "Sql[%s] error:[%s]", sql, Exception_frame.message);
         error = buf;
     }
     END_TRY;
+	va_end(args);
     Connection_close(conn);
 }
 
-void DBConnectionPool::execQuery(const std::string& sql, const std::vector<std::pair<uint32, std::string>>& paramVec, std::string& error, std::function<void(ResultSet_T result)> func) {
+void DBConnectionPool::execQuery(std::string& error, std::function<void(ResultSet_T result)> func, const std::vector<std::pair<uint32, std::string>>& paramVec, const char* format, ...) {
     Connection_T conn = ConnectionPool_getConnection(m_pool);
     if (NULL == conn) {
         error = DB_CONN_IS_NULL;
         return;
     }
+    char sql[SQL_MAX_LEN] = {0};
+    va_list args;
+    va_start(args, format);
+    std::vsnprintf(sql, SQL_MAX_LEN - 1, format, args);
+	va_end(args);
 
     TRY
     {
-        PreparedStatement_T ps = Connection_prepareStatement(conn, "%s", sql.c_str());
+        PreparedStatement_T ps = Connection_prepareStatement(conn, "%s", sql);
         for (uint32 i = 0; i < paramVec.size(); i++) {
             switch (paramVec.at(i).first) {
-                case DATE_TYPE_STRING:
+                case DATA_TYPE_STRING:
                     PreparedStatement_setString(ps, i+1, paramVec.at(i).second.c_str());
                     break;
                 case DATA_TYPE_INT:
+                    PreparedStatement_setInt(ps, i+1, string_to_int32(paramVec.at(i).second));
+                    break;
                 case DATA_TYPE_LLONG:
+                    PreparedStatement_setLLong(ps, i+1, string_to_int64(paramVec.at(i).second));
+                    break;
+                case DATA_TYPE_UINT:
+                    PreparedStatement_setInt(ps, i+1, string_to_uint32(paramVec.at(i).second));
+                    break;
+                case DATA_TYPE_ULLONG:
+                    PreparedStatement_setLLong(ps, i+1, string_to_uint64(paramVec.at(i).second));
+                    break;
                 case DATA_TYPE_DOUBLE:
+                    // TODO:暂时不需要double类型
+                    break;
                 case DATA_TYPE_TIMESTAMP:
+                    PreparedStatement_setTimestamp(ps, i+1, string_to_uint32(paramVec.at(i).second));
                     break;
                 case DATA_TYPE_BLOB:
                     PreparedStatement_setBlob(ps, i+1, paramVec.at(i).second.c_str(),  paramVec.at(i).second.size());
@@ -135,10 +168,11 @@ void DBConnectionPool::execQuery(const std::string& sql, const std::vector<std::
     CATCH(SQLException)
     {
         char buf[DB_ERROR_LEN] = {0};
-        snprintf(buf, sizeof(buf), "exec sql error:%s", Exception_frame.message);
+        snprintf(buf, sizeof(buf), "Sql[%s] error:[%s]", sql, Exception_frame.message);
         error = buf;
     }
     END_TRY;
+	va_end(args);
     Connection_close(conn);
 
 }
@@ -158,7 +192,7 @@ void DBConnectionPool::execFunc(std::string& error, std::function<void(Connectio
     CATCH(SQLException)
     {
         char buf[DB_ERROR_LEN] = {0};
-        snprintf(buf, sizeof(buf), "exec sql error:%s", Exception_frame.message);
+        snprintf(buf, sizeof(buf), "Exec sql error:%s", Exception_frame.message);
         error = buf;
     }
     END_TRY;
