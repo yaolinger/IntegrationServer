@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+#include "db_base.hpp"
+
 NS_UTILS_BEGIN
 
 SQLTable::SQLTable(const std::string& table, const std::string& where, const std::vector<SQLField>& fieldVec)
@@ -16,9 +18,9 @@ SQLTable::SQLTable(const std::string& table, const std::string& where, const std
         }
         oss <<fieldVec[i].name;
     }
-    oss << "from " << m_table << ";";
+    oss << " from " << m_table << ";";
     m_selectAll = oss.str();
-    oss.clear();
+    oss.str("");
 
     // selectLimit
     oss << "select ";
@@ -28,14 +30,14 @@ SQLTable::SQLTable(const std::string& table, const std::string& where, const std
         }
         oss <<fieldVec[i].name;
     }
-    oss << "from " << m_table << " limit ?, ?;";
+    oss << " from " << m_table << " limit %u, %u;";
     m_selectLimit = oss.str();
-    oss.clear();
+    oss.str("");
 
     // selectCount;
-    oss << "select count(*) from " << m_table << ";";
+    oss << "select count(*) as num from " << m_table << ";";
     m_selectCount = oss.str();
-    oss.clear();
+    oss.str("");
 
     // selectWhere
     oss << "select ";
@@ -45,9 +47,9 @@ SQLTable::SQLTable(const std::string& table, const std::string& where, const std
         }
         oss <<fieldVec[i].name;
     }
-    oss << "from " << m_table << " where " << m_where << ";";
+    oss << " from " << m_table << " where " << m_where << ";";
     m_selectWhere = oss.str();
-    oss.clear();
+    oss.str("");
 
     // update
     oss << "update " << m_table << " set ";
@@ -55,11 +57,11 @@ SQLTable::SQLTable(const std::string& table, const std::string& where, const std
         if (i > 0) {
             oss << ", ";
         }
-        oss << "set " <<fieldVec[i].name <<"=?";
+        oss << "set " << fieldVec[i].name << "=" << getTypeFormatParam(fieldVec[i].type);
     }
     oss << " where " << m_where << ";";
     m_update = oss.str();
-    oss.clear();
+    oss.str("");
 
     // insert
     oss << "insert into " << m_table << " (";
@@ -74,11 +76,11 @@ SQLTable::SQLTable(const std::string& table, const std::string& where, const std
         if (i > 0) {
             oss << ", ";
         }
-        oss << "?";
+        oss << getTypeFormatParam(fieldVec[i].type);
     }
     oss << ")";
     m_insert = oss.str();
-    oss.clear();
+    oss.str("");
 }
 
 const std::string& SQLTable::selectAll() {

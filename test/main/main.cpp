@@ -50,6 +50,6 @@ int main() {
     // TestDBConnectionPool();
 
     // test DBManager
-    // TestDBManager();
+    TestDBManager();
     return 0;
 }

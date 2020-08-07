@@ -2,6 +2,10 @@
 #define UTILS_DB_BASE_HPP
 
 #include <map>
+#include <memory>
+#include <string>
+#include <vector>
+#include <zdb.h>
 
 #include "macros.hpp"
 
@@ -12,9 +16,9 @@ NS_UTILS_BEGIN
 // 链接超时最小时间
 #define DB_CONN_MIN_TIMEOUT 5
 // 错误长度
-#define DB_ERROR_LEN 1000
+#define DB_ERROR_LEN 10000
 // sql长度
-#define SQL_MAX_LEN 500
+#define SQL_MAX_LEN 5000
 // 错误信息
 #define DB_EXEC_SUCCESS "db exec success"
 #define DB_CONN_IS_NULL "db conn is null"
@@ -37,10 +41,13 @@ enum DATA_TYPE {
     DATA_TYPE_LLONG = 3,
     DATA_TYPE_UINT = 4,
     DATA_TYPE_ULLONG = 5,
-    DATA_TYPE_DOUBLE = 6,
+    DATA_TYPE_DOUBLE = 6,         // TODO:暂时不使用
     DATA_TYPE_BLOB = 7,
-    DATA_TYPE_TIMESTAMP = 8,
+    DATA_TYPE_TIMESTAMP = 8,      // TODO:暂时不使用
 };
+
+// 获取类型对应格式化参数
+const char * getTypeFormatParam(uint32_t type);
 
 // 数据库初始化数据
 struct DBInitData {
@@ -58,15 +65,6 @@ struct DBInitData {
 struct DBTableData {
     std::string table;         // 表名
     std::string where;         // 查询条件
-    bool startRead;            // 启动加载
-};
-
-// 表结构缓存
-struct DBTableCache {
-    std::string table;                        // 表名
-    std::string where;                        // 查询条件
-    bool startRead;                           // 启动加载
-    std::map<std::string, uint32> fieldMap;   // 字段(名字:数据类型)
 };
 
 NS_UTILS_END

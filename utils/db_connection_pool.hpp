@@ -5,7 +5,6 @@
 #include <functional>
 #include <vector>
 #include <string>
-#include <zdb.h>
 
 #include "db_base.hpp"
 

@@ -1,5 +1,7 @@
 #include "db_manager.hpp"
+
 #include "log.hpp"
+#include "sql.hpp"
 
 NS_UTILS_BEGIN
 
@@ -21,7 +23,6 @@ bool DBManager::init(uint32 threadCount, const DBInitData& db, const std::vector
     m_scheduler.start();
     // 加载数据结构
     ret = loadTableField(tableVec);
-
     return ret;
 }
 
@@ -36,6 +37,7 @@ bool DBManager::loadTableField(const std::vector<DBTableData>& tableVec) {
     // 处理结果
     auto dealResult = [this, &ret] (const std::string& table, ResultSet_T result) {
         DBTableCache tableCache;
+        std::vector<SQLField> fieldVec;
         tableCache.table = table;
         while(ResultSet_next(result)) {
             std::string fieldName = ResultSet_getString(result, 1);
@@ -65,8 +67,9 @@ bool DBManager::loadTableField(const std::vector<DBTableData>& tableVec) {
                 log_error("Table[%s] field[%s] type[%s] is unknown.", table.c_str(), fieldName.c_str(), fieldTypeStr.c_str());
                 return ;
             }
-            tableCache.fieldMap[fieldName] = fieldType;
+            fieldVec.push_back({fieldType, fieldName});
         }
+        tableCache.sqlPtr = std::make_shared<SQLTable>(table, tableCache.where, fieldVec);
         m_tableCacheMap[table] = tableCache;
     };
 
@@ -81,10 +84,21 @@ bool DBManager::loadTableField(const std::vector<DBTableData>& tableVec) {
             return ret;
         }
         m_tableCacheMap[value.table].where = value.where;
-        m_tableCacheMap[value.table].startRead = value.startRead;
     }
-
     return ret;
+}
+
+SQLTablePtr DBManager::getTableSql(const char* table) {
+    if (NULL == table) {
+        log_error("NULL == table");
+        return NULL;
+    }
+    auto iter = m_tableCacheMap.find(table);
+    if (iter == m_tableCacheMap.end()) {
+        log_error("Can not find table[%s]", table);
+        return NULL;
+    }
+    return iter->second.sqlPtr;
 }
 
 NS_UTILS_END

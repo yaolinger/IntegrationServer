@@ -1,8 +1,9 @@
 #ifndef UTILS_SQL_HPP
 #define UTILS_SQL_HPP
 
-#include <vector>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "macros.hpp"
 
@@ -43,6 +44,7 @@ private:
     std::string m_update;
     std::string m_insert;
 };
+typedef std::shared_ptr<SQLTable> SQLTablePtr;
 
 NS_UTILS_END
 
