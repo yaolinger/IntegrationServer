@@ -1,5 +1,6 @@
 #include "utils/log.hpp"
 #include "utils/time_helper.hpp"
+#include "test_syntax/test_reference.hpp"
 #include "test_syntax/test_class.hpp"
 #include "test_utils/test_calc_tool.hpp"
 #include "test_utils/test_db_connection_pool.hpp"
@@ -54,6 +55,9 @@ int main() {
     // TestDBManager();
 
     // test class
-    TestClass();
+    // TestClass();
+
+    // test reference
+    TestReference();
     return 0;
 }
