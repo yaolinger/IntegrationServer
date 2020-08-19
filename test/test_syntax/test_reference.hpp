@@ -13,16 +13,21 @@
 /*泛左值, 纯右值,演化为 亡值,左值,右值*/
 
 /*左值引用 右值引用 万能引用 引用折叠 完美转发测试*/
-/*引用折叠 : T& & = T&
- *           T& && = &
- *           T&& & = &
- *           T&& && = &&
+/*引用折叠(引用坍塌): T& & = T&
+ *                    T& && = &
+ *                    T&& & = &
+ *                    T&& && = &&
+ *  规则:引用的引用, 含有一次左值引用 推导结果则为左值引用
  * */
 
 /*c++ 提供的typeid().name() 输出数据类型为简写且无法打印引用 不适于下面分析
  *所以采用 boost::typeindex::type_id_with_cvr<decltype(对象)>().pretty_name()
  * cvr 分别代表 const volatile reference
  * */
+
+// 引用折叠:编译器允许出现引用的引用, 但是可以通过模板推导或者typedef构成引用的引用
+typedef uint32& lRef;    // 左值引用类型
+typedef uint32&& rRef;   // 右值引用类型
 
 // 获取对象类型
 #define GetValueName(val) \
@@ -100,7 +105,20 @@ void TestReference() {
         log_warn("万能引用测试: 左右值皆可");
         // 以上引用推导的过程,为引用折叠
     }
-
+    // 引用折叠(引用坍塌)测试
+    {
+        uint32 index = 3;
+        log_info("引用折叠推导 uint32 => type[%s]", GetValueName(index));
+        lRef& lIndex = index;
+        log_info("引用折叠推导 uint32& & => type[%s]", GetValueName(lIndex));
+        lRef&& lIndex2 = index;
+        log_info("引用折叠推导 uint32& && => type[%s]", GetValueName(lIndex2));
+        rRef& rIndex = index;
+        log_info("引用折叠推导 uint32&& & => type[%s]", GetValueName(rIndex));
+        rRef&& rIndex2 = 1;
+        log_info("引用折叠推导 uint32&& && => type[%s]", GetValueName(rIndex2));
+        log_warn("引用折叠规则测试");
+    }
     // 完美转发测试
     {
         uint32 num = 1;
