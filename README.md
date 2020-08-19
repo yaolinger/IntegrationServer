@@ -36,7 +36,8 @@ python第三方: mako
 
 ## Test
 测试模块  
-用于测试utils boost_network  
+用于测试utils boost_network protocpp  
+新增了语法测试模块  
 
 ## Single_server
 boost服务器示例  
