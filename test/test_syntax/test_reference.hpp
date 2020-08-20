@@ -82,18 +82,20 @@ void TestReference() {
         uint32 index = 1;
         uint32& index2 = index;
         uint32&& index3 = 3;
-        LeftReference(index);
-        LeftReference(index2);
-        LeftReference(index3);
+        LeftReference(index);             // T:uint32, T&:uint32&, valueType:uint32&
+        LeftReference(index2);            // T:uint32, T&:uint32&, valueType:uint32&
+        LeftReference(index3);            // T:uint32, T&:uint32&, valueType:uint32&
+        LeftReference<uint32_t&>(index);  // T:uint32&, T&:uint32& &, valueType:uint32&
+        LeftReference<uint32_t&&>(index); // T:uint32&&, T&:uint32&& &, valueType:uint32&
         log_warn("左值引用模板测试: 左值引用,右值引用皆为左值");
-        // LeftReference(2); 不可传入右值
+        // 以上引用推导的过程,为引用折叠
     }
     // 右值引用测试
     {
         RightReference(2);
         uint32 index = 2;
         RightReference(std::move(index));
-        log_warn("右值引用测试: 只可只使用纯右值");
+        log_warn("右值引用测试: 只可只使用右值");
     }
     // 万能引用测试
     {
