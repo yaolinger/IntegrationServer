@@ -17,8 +17,7 @@ all : $(TARGET)
 -include $(DEPS)
 
 %.o : %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDE) $(VERSION) -c $< -o $@ -MMD -MP
-
+	$(CXX) $(CXXFLAGS) -Wno-unused-variable $(INCLUDE) $(VERSION) -c $< -o $@ -MMD -MP
 
 $(TARGET) : $(OBJS) $(USER_LIB)
 	$(CXX) $^ $(LIB_PATH) $(LIB) $(USER_LIB) -o $@

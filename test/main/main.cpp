@@ -1,7 +1,8 @@
 #include "utils/log.hpp"
 #include "utils/time_helper.hpp"
-#include "test_syntax/test_reference.hpp"
+#include "test_syntax/test_cast.hpp"
 #include "test_syntax/test_class.hpp"
+#include "test_syntax/test_reference.hpp"
 #include "test_utils/test_calc_tool.hpp"
 #include "test_utils/test_db_connection_pool.hpp"
 #include "test_utils/test_db_manager.hpp"
@@ -58,6 +59,9 @@ int main() {
     // TestClass();
 
     // test reference
-    TestReference();
+    // TestReference();
+
+    // test cast
+    TestCast();
     return 0;
 }
