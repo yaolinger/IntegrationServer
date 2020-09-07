@@ -1,4 +1,4 @@
-SUBDIRS = utils proto protocpp boost_network service_core single_server robot test
+SUBDIRS = utils proto protocpp boost_network logic_work service_core single_server robot test
 
 all :
 	@for dir in $(SUBDIRS); \
