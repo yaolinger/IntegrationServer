@@ -7,7 +7,7 @@
 编译器版本: gcc version 5.4.0  
 python版本: 2.7.12  
 python第三方: mako  
-目前支持主体模块: proto protocpp utils boost_network test single_server robot  
+目前支持主体模块: proto protocpp utils boost_network test single_server robot logic_work  
 项目部署:  
 1. 代码拉取: git clone https://github.com/yaolinger/IntegrationServer.git  
 2. 编译运行环境脚本拉取: git clone https://github.com/yaolinger/env_script.git  
@@ -44,3 +44,6 @@ boost服务器示例
 
 ## Robot
 机器人, 用于协议测试  
+
+## Logic_work
+业务模拟模块, 优化业务封装  
