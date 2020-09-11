@@ -138,22 +138,22 @@ void DBConnectionPool::execQuery(std::string& error, std::function<void(ResultSe
                     PreparedStatement_setString(ps, i+1, paramVec.at(i).second.c_str());
                     break;
                 case DATA_TYPE_INT:
-                    PreparedStatement_setInt(ps, i+1, string_to_int32(paramVec.at(i).second));
+                    PreparedStatement_setInt(ps, i+1, stringToInt32(paramVec.at(i).second));
                     break;
                 case DATA_TYPE_LLONG:
-                    PreparedStatement_setLLong(ps, i+1, string_to_int64(paramVec.at(i).second));
+                    PreparedStatement_setLLong(ps, i+1, stringToInt64(paramVec.at(i).second));
                     break;
                 case DATA_TYPE_UINT:
-                    PreparedStatement_setInt(ps, i+1, string_to_uint32(paramVec.at(i).second));
+                    PreparedStatement_setInt(ps, i+1, stringToUint32(paramVec.at(i).second));
                     break;
                 case DATA_TYPE_ULLONG:
-                    PreparedStatement_setLLong(ps, i+1, string_to_uint64(paramVec.at(i).second));
+                    PreparedStatement_setLLong(ps, i+1, stringToUint64(paramVec.at(i).second));
                     break;
                 case DATA_TYPE_DOUBLE:
                     // TODO:暂时不需要double类型
                     break;
                 case DATA_TYPE_TIMESTAMP:
-                    PreparedStatement_setTimestamp(ps, i+1, string_to_uint32(paramVec.at(i).second));
+                    PreparedStatement_setTimestamp(ps, i+1, stringToUint32(paramVec.at(i).second));
                     break;
                 case DATA_TYPE_BLOB:
                     PreparedStatement_setBlob(ps, i+1, paramVec.at(i).second.c_str(),  paramVec.at(i).second.size());

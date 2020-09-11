@@ -47,7 +47,7 @@ int main() {
     // TestSchedulerLF();
 
     // test calc tool
-    // TestCalcTool();
+    TestCalcTool();
 
     // test DBConnectionPool
     // TestDBConnectionPool();
@@ -62,6 +62,6 @@ int main() {
     // TestReference();
 
     // test cast
-    TestCast();
+    // TestCast();
     return 0;
 }
