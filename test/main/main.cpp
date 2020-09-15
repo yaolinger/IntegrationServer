@@ -1,5 +1,6 @@
 #include "utils/log.hpp"
 #include "utils/time_helper.hpp"
+#include "test_logic_work/test_battle.hpp"
 #include "test_syntax/test_cast.hpp"
 #include "test_syntax/test_class.hpp"
 #include "test_syntax/test_reference.hpp"
@@ -47,7 +48,7 @@ int main() {
     // TestSchedulerLF();
 
     // test calc tool
-    TestCalcTool();
+    // TestCalcTool();
 
     // test DBConnectionPool
     // TestDBConnectionPool();
@@ -63,5 +64,8 @@ int main() {
 
     // test cast
     // TestCast();
+
+    // test battle
+    TestBattle();
     return 0;
 }
