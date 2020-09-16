@@ -162,9 +162,6 @@ void Combat::autoFight() {
 
     // 填充默认技能
     uint32 skillId = m_curOpearteUnit->getDefaultSkill();
-    if (0 == skillId) {
-        skillId = TEST_SKILL_ID;
-    }
     std::vector<uint64> targetVec;
     getDefaultSkillTarget(skillId, targetVec);
     m_curOpearteUnit->setCurOperate(skillId, targetVec);
@@ -221,11 +218,11 @@ void Combat::combatEnd() {
     // 战斗结束
     m_step = BATTLE_STEP_END;
     log_warn("战斗结束:combat[%lu] round[%u]~~~~~~~~~~~~~~~", m_uid, m_round);
-    if (m_result.ret == COMBAT_RESULT_WIN) {
+    if (m_result.ret == COMBAT_RESULT_CAMP2_DEFEAT) {
         log_warn("Camp1 战斗胜利 camp2 全部阵亡.");
-    } else if (m_result.ret == COMBAT_RESULT_DEFEAT) {
+    } else if (m_result.ret == COMBAT_RESULT_CAMP1_DEFEAT) {
         log_warn("Camp2 战斗胜利 camp1 全部阵亡.");
-    } else if (m_result.ret == COMBAT_RESULT_TIE) {
+    } else if (m_result.ret == COMBAT_RESULT_ALL_DEFEAT) {
         log_warn("Camp1  camp2 全部阵亡.");
     } else if (m_result.ret == COMBAT_RESULT_TIMEOUT) {
         log_warn("战斗超时强制结束");
@@ -465,13 +462,13 @@ bool Combat::checkCombatEnd() {
     bool deadCamp1 = isAllDeadByCamp(BATTLE_CAMP_1);
     bool deadCamp2 = isAllDeadByCamp(BATTLE_CAMP_2);
     if (deadCamp1 && deadCamp2) {
-        m_result.ret = COMBAT_RESULT_TIE;
+        m_result.ret = COMBAT_RESULT_ALL_DEFEAT;
         return true;
     } else if (deadCamp1) {
-        m_result.ret = COMBAT_RESULT_DEFEAT;
+        m_result.ret = COMBAT_RESULT_CAMP1_DEFEAT;
         return true;
     } else if (deadCamp2) {
-        m_result.ret = COMBAT_RESULT_WIN;
+        m_result.ret = COMBAT_RESULT_CAMP2_DEFEAT;
         return true;
     } else if (m_round >= MAX_ROUND) {
         m_result.ret = COMBAT_RESULT_TIMEOUT;
@@ -491,9 +488,8 @@ void Combat::getDefaultSkillTarget(uint32 skill, std::vector<uint64>& targetVec)
     }
     // 获取敌对阵营
     uint32 targetCamp = m_curOpearteUnit->getCamp() == BATTLE_CAMP_1 ? BATTLE_CAMP_2 : BATTLE_CAMP_1;
-
-    // 测试技能
-    if (TEST_SKILL_ID == skill) {
+    // 普通攻击
+    if (BATTLE_SKILL_NORMAL_ATK == skill) {
         std::vector<BattleUnitPtr> unitVec;
         getAliveUnitByCamp(targetCamp, unitVec);
         if (unitVec.size() == 0) {

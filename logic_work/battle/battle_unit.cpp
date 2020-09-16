@@ -1,5 +1,7 @@
 #include "battle_unit.hpp"
 
+#include "battle_attr.hpp"
+
 BattleUnit::BattleUnit() {}
 
 BattleUnit::~BattleUnit() {}
@@ -46,7 +48,7 @@ void BattleUnit::clearCurOperate() {
 
 uint32 BattleUnit::getDefaultSkill() {
     // TODO::暂未实现
-    return 0;
+    return BATTLE_SKILL_NORMAL_ATK;
 }
 
 uint32 BattleUnit::getSpeed() {

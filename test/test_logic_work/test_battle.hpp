@@ -2,6 +2,7 @@
 #define TEST_LOGIC_WORK_TEST_BATTLE_HPP
 
 #include "logic_work/battle/combat.hpp"
+#include "logic_work/battle/combat_calc.hpp"
 #include "utils/log.hpp"
 #include "utils/log_helper.hpp"
 #include "utils/macros.hpp"
@@ -26,6 +27,8 @@ BattleUnitData RandUnit(uint64 uid) {
 void TestBattle() {
     FUNC_TRACE;
 	USING_NS_UTILS;
+
+    CombatCalc::init();
 
     CombatPtr pCombat = std::make_shared<Combat>(1);
     BattleInitData battleData;

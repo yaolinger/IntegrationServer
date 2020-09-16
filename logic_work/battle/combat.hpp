@@ -1,6 +1,7 @@
 #ifndef BATTLE_COMBAT_HPP
 #define BATTLE_COMBAT_HPP
 
+#include "battle_attr.hpp"
 #include "battle_unit.hpp"
 #include "camp_unit.hpp"
 

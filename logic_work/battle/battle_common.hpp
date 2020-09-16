@@ -70,14 +70,6 @@ struct BattleInitData {
     std::vector<BattleCamp> campVec;      // 阵营数据
 };
 
-// 战斗属性
-enum BATTLE_ATTR {
-    BATTLE_ATTR_HP = 1,                   // 血量
-    BATTLE_ATTR_ATK = 2,                  // 攻击力
-    BATTLE_ATTR_DEF = 3,                  // 防御力
-    BATTLE_ATTR_SPEED = 4,                // 速度
-};
-
 // 战斗操作
 struct CombatOperate {
     uint32 skillId = 0;                       // 技能id
@@ -86,10 +78,10 @@ struct CombatOperate {
 
 // 战斗结果
 enum COMBAT_RESULT {
-    COMBAT_RESULT_WIN = 1,                    // 胜利
-    COMBAT_RESULT_TIE = 2,                    // 平局
-    COMBAT_RESULT_DEFEAT = 3,                 // 失败
-    COMBAT_RESULT_TIMEOUT = 4,                // 超时
+    COMBAT_RESULT_CAMP1_DEFEAT = 1,                    // 阵营一失败(全部死亡)
+    COMBAT_RESULT_CAMP2_DEFEAT = 2,                    // 阵营二失败(全部死亡)
+    COMBAT_RESULT_ALL_DEFEAT = 3,                      // 全部阵营失败
+    COMBAT_RESULT_TIMEOUT = 4,                         // 超时
 };
 
 // 战斗结果
