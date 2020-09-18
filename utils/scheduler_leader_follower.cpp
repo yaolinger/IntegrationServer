@@ -1,15 +1,21 @@
 #include "scheduler_leader_follower.hpp"
-#include "reactor.hpp"
 
 NS_UTILS_BEGIN
 
 SchedulerLF::SchedulerLF(uint32 mode) : m_mode(mode)  {
-    m_reactor = std::make_shared<FakeReactor>();
-    m_reactorUnit = std::make_shared<SchdeulerUnit>([](){});
-    m_work.store(true);
 }
 
 SchedulerLF::~SchedulerLF() {
+}
+
+bool SchedulerLF::init(ReactorPtr pReactor) {
+    if (NULL == pReactor) {
+        return false;
+    }
+    m_reactor = pReactor;
+    m_reactorUnit = std::make_shared<SchdeulerUnit>([](){});
+    m_work.store(true);
+    return true;
 }
 
 void SchedulerLF::start() {

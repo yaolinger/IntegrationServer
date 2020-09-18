@@ -24,6 +24,9 @@ public:
     SchedulerLF(uint32 mode);
     ~SchedulerLF();
 
+    // 初始化
+    bool init(ReactorPtr pReactor);
+
     // 开始工作
     void start();
 

@@ -45,7 +45,7 @@ int main() {
     // TestScheduler();
 
     // test SchedulerLF
-    // TestSchedulerLF();
+    TestSchedulerLF();
 
     // test calc tool
     // TestCalcTool();
@@ -66,6 +66,6 @@ int main() {
     // TestCast();
 
     // test battle
-    TestBattle();
+    // TestBattle();
     return 0;
 }
