@@ -126,6 +126,19 @@ bool ReactorEpoll::changeEvent(EPOLL_EVENT_OP op, SocketDataPtr pSocket) {
     return true;
 }
 
+bool ReactorEpoll::delEvent(SocketDataPtr pSocket) {
+    // pSocket 外部检测
+    epoll_event ev;
+    ev.events = 0;
+    ev.data.fd = pSocket->fd;
+    pSocket->curEvent = ev.events;
+    int32 result = epoll_ctl(m_epollFd, EPOLL_CTL_DEL, ev.data.fd, &ev);
+    if (0 != result) {
+        m_error = "epoll del event error[" + std::to_string(errno) + "]";
+    }
+    return 0 == result;
+}
+
 int32 ReactorEpoll::doEpollCreate() {
     // linux 2.6.8 以上 epoll size 大于0即可
     int32 fd = epoll_create(s_epollSize);
