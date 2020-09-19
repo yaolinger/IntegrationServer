@@ -4,6 +4,7 @@
 #include <functional>
 #include <list>
 #include <memory>
+#include <string>
 
 #include "macros.hpp"
 
@@ -32,7 +33,9 @@ public:
 // 反应堆基础
 class ReactorBase {
 public:
-    virtual void reactorWait(std::list<UnitPtr>& taskList) = 0;
+    virtual void reactorWait(std::list<UnitPtr>& taskList, int32 timeout) = 0;
+
+    virtual const std::string& getError() = 0;
 };
 
 typedef std::shared_ptr<ReactorBase> ReactorPtr;

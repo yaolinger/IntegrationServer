@@ -8,7 +8,12 @@ NS_UTILS_BEGIN
 // 测试用reactor (只模仿阻塞效果)
 class FakeReactor : public ReactorBase {
 public:
-    void reactorWait(std::list<UnitPtr>& taskList);
+    void reactorWait(std::list<UnitPtr>& taskList, int32 timeOut);
+
+    const std::string& getError() { return m_error; }
+
+private:
+    std::string m_error = "fake";
 };
 
 NS_UTILS_END

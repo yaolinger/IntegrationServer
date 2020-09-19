@@ -59,9 +59,9 @@ void SchedulerLF::run() {
 }
 
 void SchedulerLF::reactorFunc() {
-    // reactor
+    // reactor timeout:500毫秒
     std::list<UnitPtr> taskList;
-    m_reactor->reactorWait(taskList);
+    m_reactor->reactorWait(taskList, 500);
     // 追加reactor切换任务
     taskList.push_back(m_reactorUnit);
     // 添加任务
