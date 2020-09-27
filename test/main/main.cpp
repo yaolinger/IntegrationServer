@@ -45,7 +45,7 @@ int main() {
     // TestScheduler();
 
     // test SchedulerLF
-    TestSchedulerLF();
+    // TestSchedulerLF();
 
     // test calc tool
     // TestCalcTool();
@@ -57,7 +57,7 @@ int main() {
     // TestDBManager();
 
     // test class
-    // TestClass();
+    TestClass();
 
     // test reference
     // TestReference();

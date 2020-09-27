@@ -2,6 +2,8 @@
 #define TEST_SYNTAX_TEST_CLASS
 
 #include <string>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include "utils/log.hpp"
 #include "utils/log_helper.hpp"
