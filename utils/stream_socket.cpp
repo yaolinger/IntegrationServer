@@ -1,0 +1,101 @@
+#include "stream_socket.hpp"
+
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include "error.hpp"
+#include "log.hpp"
+
+NS_UTILS_BEGIN
+
+StreamSocket::StreamSocket() {
+    m_fd = ::socket(AF_INET, SOCK_STREAM, 0);
+    if (INVAILD_ERROR == m_fd) {
+        m_error = "Create socket error, " + GET_SYSTEM_ERRNO_INFO;
+    }
+}
+
+StreamSocket::StreamSocket(int32 fd) : m_fd(fd) {
+}
+
+StreamSocket::~StreamSocket() {
+}
+
+void StreamSocket::reUse() {
+    int32 on = 1;
+    ::setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&on, sizeof(on));
+    ::setsockopt(m_fd, SOL_SOCKET, SO_REUSEPORT, (char*)&on, sizeof(on));
+}
+
+bool StreamSocket::setNonblock() {
+    clearError();
+    int32 oldFlag = ::fcntl(m_fd, F_GETFL, 0);
+    int32 newFlag = oldFlag | O_NONBLOCK;
+    if (::fcntl(m_fd, F_SETFL, newFlag) == INVAILD_ERROR) {
+        m_error = "Set socket nonblock error, " + GET_SYSTEM_ERRNO_INFO;
+        return false;
+    }
+    return true;
+}
+
+bool StreamSocket::bind(const std::string& ip, uint16 port) {
+    clearError();
+    struct sockaddr_in bindAddr;
+    bindAddr.sin_family = AF_INET;
+    bindAddr.sin_addr.s_addr = inet_addr(ip.c_str());
+    bindAddr.sin_port = htons(port);
+    if (::bind(m_fd, (sockaddr *)&bindAddr, sizeof(bindAddr)) == INVAILD_ERROR) {
+        m_error = "Bind ipv4 addr error, " + GET_SYSTEM_ERRNO_INFO;
+        return false;
+    }
+    return true;
+}
+
+bool StreamSocket::listen() {
+    clearError();
+    if (::listen(m_fd, SOMAXCONN) == INVAILD_ERROR) {
+        m_error = "Listen error, " + GET_SYSTEM_ERRNO_INFO;
+        return false;
+    }
+    return true;
+}
+
+bool StreamSocket::synConnect(const std::string& ip, uint16 port) {
+    clearError();
+    struct sockaddr_in connectAddr;
+    connectAddr.sin_family = AF_INET;
+    connectAddr.sin_addr.s_addr = inet_addr(ip.c_str());
+    connectAddr.sin_port = htons(port);
+    if (::connect(m_fd, (sockaddr*)&connectAddr, sizeof(connectAddr)) == INVAILD_ERROR) {
+        m_error = "Connect error, " + GET_SYSTEM_ERRNO_INFO;
+        return false;
+    }
+    return true;
+}
+
+int32 StreamSocket::synAccept(std::string& ip, uint16& port) {
+    clearError();
+    struct sockaddr_in clientAddr;
+    socklen_t clientAddrLen = sizeof(clientAddr);
+    int32 clientFd = accept(m_fd, (sockaddr*)&clientAddr, &clientAddrLen);
+    if (clientFd != INVAILD_ERROR) {
+        port = ntohs(clientAddr.sin_port);
+        char str[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &(clientAddr.sin_addr), str, sizeof(str));
+    }
+    return clientFd;
+}
+
+int32 StreamSocket::sendData(const char* buf, int32 len) {
+    return ::send(m_fd, buf, len, 0);
+}
+
+int32 StreamSocket::recvData(char* buf, int32 len) {
+    return ::recv(m_fd, buf, len, 0);
+}
+
+NS_UTILS_END

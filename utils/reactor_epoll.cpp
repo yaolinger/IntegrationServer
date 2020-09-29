@@ -5,6 +5,7 @@
 #include <memory>
 #include <sys/epoll.h>
 
+#include "error.hpp"
 #include "log.hpp"
 #include "rand.hpp"
 #include "scheduler_unit.hpp"
@@ -65,7 +66,7 @@ bool ReactorEpoll::registerReadEvent(ReactorSocketDataPtr ptr, ReactorUnitPtr pU
         m_socketMap[ptr->getFd()] = ptr;
         return true;
     } else {
-        m_error = "Register read event error, errno[" + std::to_string(errno) + "]";
+        m_error = "Register read event error, " + GET_SYSTEM_ERRNO_INFO;
         return false;
     }
 }
@@ -99,7 +100,7 @@ bool ReactorEpoll::delEvent(int32 fd) {
         m_socketMap.erase(fd);
         return true;
     } else {
-        m_error = "Del socket event error, errno[" + std::to_string(errno) + "]";
+        m_error = "Del socket event error, " + GET_SYSTEM_ERRNO_INFO;
         return false;
     }
 }
