@@ -1,19 +1,20 @@
-#include "reactor_socket_data.hpp"
+#include "reactor_epoll_mount_data.hpp"
 
 #include <vector>
 #include "log.hpp"
+#include "reactor_epoll.hpp"
 
 NS_UTILS_BEGIN
 
 // 初始化即可写
-ReactorSocketData::ReactorSocketData(int32 fd) : m_curEvent(0), m_fd(fd) {
-    m_tiggerEventMap[REACTOR_EVENT_WRITE] = true;
+ReactorEpollMountData::ReactorEpollMountData(int32 fd, ReactorEpollPtr pRE) : m_curEvent(0), m_fd(fd), m_reactor(pRE) {
+    m_tiggerEventMap[REACTOR_ACTIVATE_EVENT_WRITE] = true;
     m_cancelFlag.store(false);
 }
 
-bool ReactorSocketData::registerEventCallback(UnitPtr ptr, REACTOR_EVENT event) {
+bool ReactorEpollMountData::addUnit(UnitPtr ptr, REACTOR_ACTIVATE_EVENT event) {
     if (m_cancelFlag.load()) {
-        log_warn("Socket[%d] aleady cancel all unit");
+        log_warn("Socket[%d] aleady cancel all unit.", m_fd);
         return false;
     }
 
@@ -21,8 +22,8 @@ bool ReactorSocketData::registerEventCallback(UnitPtr ptr, REACTOR_EVENT event) 
         log_error("NULL == ptr");
         return false;
     }
-    if (event == REACTOR_EVENT_ERROR) {
-        log_error("REACTOR_EVENT_ERROR not need register");
+    if (event == REACTOR_ACTIVATE_EVENT_ERROR) {
+        log_error("REACTOR_ACTIVATE_EVENT_ERROR not need add.");
         return false;
     }
     std::lock_guard<std::mutex> lk(m_unitMutex);
@@ -30,7 +31,7 @@ bool ReactorSocketData::registerEventCallback(UnitPtr ptr, REACTOR_EVENT event) 
     return true;
 }
 
-void ReactorSocketData::runEventOp(std::list<UnitPtr>& taskList, uint32 event) {
+void ReactorEpollMountData::runEventOp(std::list<UnitPtr>& taskList, uint32 event) {
     if (m_cancelFlag.load()) {
         log_warn("Socket[%d] aleady cancel all unit");
         return;
@@ -39,10 +40,10 @@ void ReactorSocketData::runEventOp(std::list<UnitPtr>& taskList, uint32 event) {
     // 添加触发标识
     {
         std::lock_guard<std::mutex> lk(m_triggerMutex);
-        if (event & (REACTOR_EVENT_READ | REACTOR_EVENT_ERROR)) {
-            m_tiggerEventMap[REACTOR_EVENT_READ] = true;
-        } else if (event & (REACTOR_EVENT_WRITE | REACTOR_EVENT_ERROR)) {
-            m_tiggerEventMap[REACTOR_EVENT_WRITE] = true;
+        if (event & (REACTOR_ACTIVATE_EVENT_READ | REACTOR_ACTIVATE_EVENT_ERROR)) {
+            m_tiggerEventMap[REACTOR_ACTIVATE_EVENT_READ] = true;
+        } else if (event & (REACTOR_ACTIVATE_EVENT_WRITE | REACTOR_ACTIVATE_EVENT_ERROR)) {
+            m_tiggerEventMap[REACTOR_ACTIVATE_EVENT_WRITE] = true;
         }
     }
 
@@ -51,7 +52,7 @@ void ReactorSocketData::runEventOp(std::list<UnitPtr>& taskList, uint32 event) {
       std::lock_guard<std::mutex> lk(m_unitMutex);
       std::vector<uint32> runEventVec;
       for (auto& kv : m_unitMap) {
-          if (event & (kv.first | REACTOR_EVENT_ERROR)) {
+          if (event & (kv.first | REACTOR_ACTIVATE_EVENT_ERROR)) {
               taskList.push_back(kv.second);
               runEventVec.push_back(kv.first);
           }
@@ -62,7 +63,19 @@ void ReactorSocketData::runEventOp(std::list<UnitPtr>& taskList, uint32 event) {
     }
 }
 
-bool ReactorSocketData::getTiggerEvent(uint32 event) {
+void ReactorEpollMountData::startEvent(REACTOR_EVENT event, UnitPtr pUnit) {
+    if (m_reactor) {
+        m_reactor->startEvent(event, shared_from_this(), pUnit);
+    }
+}
+
+void ReactorEpollMountData::post(UnitPtr pUnit) {
+    if (m_reactor) {
+        m_reactor->post(pUnit);
+    }
+}
+
+bool ReactorEpollMountData::getTiggerEvent(uint32 event) {
     std::lock_guard<std::mutex> lk(m_triggerMutex);
     auto iter = m_tiggerEventMap.find(event);
     if (iter != m_tiggerEventMap.end()) {
@@ -71,7 +84,7 @@ bool ReactorSocketData::getTiggerEvent(uint32 event) {
     return false;
 }
 
-bool ReactorSocketData::runIOFunc(uint32 event, std::function<bool()> IOFunc) {
+bool ReactorEpollMountData::runIOFunc(uint32 event, std::function<bool()> IOFunc) {
     // 注意这里return true
     if (m_cancelFlag.load()) {
         log_warn("Socket[%d] aleady cancel all unit");
@@ -89,7 +102,7 @@ bool ReactorSocketData::runIOFunc(uint32 event, std::function<bool()> IOFunc) {
     return true;
 }
 
-void ReactorSocketData::cancelUnits() {
+void ReactorEpollMountData::cancelUnits() {
     m_cancelFlag.store(true);
     // 清除标识
     {
@@ -100,6 +113,9 @@ void ReactorSocketData::cancelUnits() {
     {
        std::lock_guard<std::mutex> lk(m_unitMutex);
        m_unitMap.clear();
+    }
+    if (m_reactor) {
+        m_reactor->delEvent(m_fd);
     }
 }
 

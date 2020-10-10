@@ -51,67 +51,66 @@ void ReactorEpoll::reactorWait(std::list<UnitPtr>& taskList, int32 timeout) {
         }
 
         if ((events[i].events & EPOLLIN) != 0) {
-            eventMask |= REACTOR_EVENT_READ;
+            eventMask |= REACTOR_ACTIVATE_EVENT_READ;
         }
         if ((events[i].events & EPOLLOUT) != 0) {
-            eventMask |= REACTOR_EVENT_WRITE;
+            eventMask |= REACTOR_ACTIVATE_EVENT_WRITE;
         }
         if ((events[i].events & (EPOLLERR | EPOLLHUP)) != 0) {
-            eventMask |= REACTOR_EVENT_ERROR;
+            eventMask |= REACTOR_ACTIVATE_EVENT_ERROR;
         }
-        ReactorSocketDataPtr pSocket = getReactorSocket((int32)events[i].data.fd);
-        if (pSocket) {
-            pSocket->runEventOp(taskList, eventMask);
+        ReactorEpollMountDataPtr pMount = getMount((int32)events[i].data.fd);
+        if (pMount) {
+            pMount->runEventOp(taskList, eventMask);
         }
     }
 }
 
-bool ReactorEpoll::registerReadEvent(ReactorSocketDataPtr ptr, UnitPtr pUnit) {
-    // ptr 外部检测
-    epoll_event ev;
-    ev.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLPRI | EPOLLET;
-    ev.data.fd = ptr->getFd();
-    if (0 == epoll_ctl(m_epollFd, EPOLL_CTL_ADD, ptr->getFd(), &ev)) {
-        ptr->m_curEvent = ev.events;
-        ptr->registerEventCallback(pUnit, REACTOR_EVENT_READ);
-        m_socketMap[ptr->getFd()] = ptr;
-        return true;
-    } else {
-        m_error = "Register read event error, " + GET_SYSTEM_ERRNO_INFO;
-        return false;
-    }
-}
-
-bool ReactorEpoll::addEvent(EPOLL_EVENT_OP op, ReactorSocketDataPtr ptr, UnitPtr pUnit) {
-    if (EPOLL_EVENT_OP_READ == op) {
+bool ReactorEpoll::startEvent(REACTOR_EVENT event, ReactorEpollMountDataPtr ptr, UnitPtr pUnit) {
+    if (REACTOR_EVENT_READ == event) {
+        // 当前可读 直接执行unit
         if (ptr->getTiggerEvent(REACTOR_EVENT_READ)) {
-            // 当前可读 直接执行unit
             m_scheduler->post(pUnit);
-        } else {
-            // 不可读添加unit待执行
-            ptr->registerEventCallback(pUnit, REACTOR_EVENT_READ);
+            return true;
         }
-    } else if (EPOLL_EVENT_OP_WRITE == op) {
+        // 当前不可读
+        // TODO::暂时忽略epoll_ctl出错
+        if ((ptr->m_curEvent & EPOLLIN) == 0) {
+            epoll_event ev;
+            ev.data.fd = ptr->getFd();
+            if (ptr->m_curEvent == 0) {
+                ev.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLPRI | EPOLLET;
+                epoll_ctl(m_epollFd, EPOLL_CTL_ADD, ptr->getFd(), &ev);
+                m_mountMap[ptr->getFd()] = ptr;
+            } else {
+                ev.events = ptr->m_curEvent | EPOLLIN;
+                epoll_ctl(m_epollFd, EPOLL_CTL_MOD, ptr->getFd(), &ev);
+            }
+            ptr->m_curEvent = ev.events;
+        }
+        ptr->addUnit(pUnit, REACTOR_ACTIVATE_EVENT_READ);
+    } else if (REACTOR_EVENT_WRITE == event) {
         // 当前可写 直接执行unit
         if (ptr->getTiggerEvent(REACTOR_EVENT_WRITE)) {
             m_scheduler->post(pUnit);
             return true;
         }
-        // 当前不可写 添加写事件及unit待执行
-        if (!(ptr->m_curEvent & EPOLLOUT)) {
+        // 当前不可写
+        // TODO::暂时忽略epoll_ctl出错
+        if ((ptr->m_curEvent & EPOLLOUT) == 0) {
             epoll_event ev;
-            ev.events = ptr->m_curEvent;
-            ev.events |= EPOLLOUT;
             ev.data.fd = ptr->getFd();
-            if (0 == epoll_ctl(m_epollFd, EPOLL_CTL_MOD, ptr->getFd(), &ev)) {
-                ptr->m_curEvent = ev.events;
-                ptr->registerEventCallback(pUnit, REACTOR_EVENT_WRITE);
+            if (ptr->m_curEvent == 0) {
+                ev.events = EPOLLOUT | EPOLLERR | EPOLLHUP | EPOLLPRI | EPOLLET;
+                epoll_ctl(m_epollFd, EPOLL_CTL_ADD, ptr->getFd(), &ev);
+                m_mountMap[ptr->getFd()] = ptr;
             } else {
-                return false;
+                ev.events = ptr->m_curEvent | EPOLLOUT;
+                epoll_ctl(m_epollFd, EPOLL_CTL_MOD, ptr->getFd(), &ev);
             }
-        } else {
-            ptr->registerEventCallback(pUnit, REACTOR_EVENT_WRITE);
+            ptr->m_curEvent = ev.events;
         }
+        ptr->addUnit(pUnit, REACTOR_ACTIVATE_EVENT_WRITE);
     }
     return true;
 }
@@ -120,7 +119,7 @@ bool ReactorEpoll::delEvent(int32 fd) {
     epoll_event ev;
     ev.events = 0;
     if (0 == epoll_ctl(m_epollFd, EPOLL_CTL_DEL, fd, &ev)) {
-        m_socketMap.erase(fd);
+        m_mountMap.erase(fd);
         return true;
     } else {
         m_error = "Del socket event error, " + GET_SYSTEM_ERRNO_INFO;
@@ -144,9 +143,9 @@ int32 ReactorEpoll::doEpollCreate() {
     return fd;
 }
 
-ReactorSocketDataPtr ReactorEpoll::getReactorSocket(int32 fd) {
-    auto iter = m_socketMap.find(fd);
-    if (iter == m_socketMap.end()) {
+ReactorEpollMountDataPtr ReactorEpoll::getMount(int32 fd) {
+    auto iter = m_mountMap.find(fd);
+    if (iter == m_mountMap.end()) {
         return NULL;
     }
     return iter->second;

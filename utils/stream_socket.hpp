@@ -11,8 +11,8 @@
 NS_UTILS_BEGIN
 
 // reactor挂载数据
-class ReactorSocketData;
-typedef std::shared_ptr<ReactorSocketData> ReactorSocketDataPtr;
+class ReactorEpollMountData;
+typedef std::shared_ptr<ReactorEpollMountData> ReactorEpollMountDataPtr;
 
 // 错误数据
 #define INVAILD_ERROR -1
@@ -76,10 +76,8 @@ public:
 
 private:
     int32 m_fd;                              // socket
-    bool m_first;                            // 首次注册
-    ReactorSocketDataPtr  m_rsd;             // reactor 挂载数据
     std::string           m_error;           // 错误数据
-    ReactorEpollPtr       m_reactorEpoll;    // reacotr(暂时不抽象)
+    ReactorEpollMountDataPtr  m_mount;       // reactor 挂载数据
 };
 
 NS_UTILS_END

@@ -9,28 +9,25 @@
 
 #include "error.hpp"
 #include "log.hpp"
+#include "reactor_epoll_mount_data.hpp"
 
 NS_UTILS_BEGIN
 
 StreamSocket::StreamSocket(ReactorEpollPtr pReacotr) {
     m_fd = ::socket(AF_INET, SOCK_STREAM, 0);
-    m_first = true;
     if (INVAILD_ERROR == m_fd) {
         m_error = GET_SYSTEM_ERRNO_INFO;
         return;
     }
-    m_rsd = std::make_shared<ReactorSocketData>(m_fd);
-    m_reactorEpoll = pReacotr;
+    m_mount = std::make_shared<ReactorEpollMountData>(m_fd, pReacotr);
 }
 
-StreamSocket::StreamSocket(int32 fd, ReactorEpollPtr pReacotr) : m_fd(fd), m_first(true) {
-    m_rsd = std::make_shared<ReactorSocketData>(m_fd);
-    m_reactorEpoll = pReacotr;
+StreamSocket::StreamSocket(int32 fd, ReactorEpollPtr pReacotr) : m_fd(fd) {
+    m_mount = std::make_shared<ReactorEpollMountData>(m_fd, pReacotr);
 }
 
 StreamSocket::~StreamSocket() {
-    m_rsd.reset();
-    m_reactorEpoll.reset();
+    m_mount.reset();
 }
 
 void StreamSocket::asynConnect(const std::string& ip, uint16 port, ReactorUnitPtr pRUnit) {
@@ -42,7 +39,7 @@ void StreamSocket::asynConnect(const std::string& ip, uint16 port, ReactorUnitPt
     };
     // 直接提交执行
     SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, pRUnit, ip, port));
-    m_reactorEpoll->post(pNetUnit);
+    m_mount->post(pNetUnit);
 }
 
 void StreamSocket::asynAccept(int32& fd, std::string& ip, uint16& port, ReactorUnitPtr pRUnit) {
@@ -62,7 +59,7 @@ void StreamSocket::asynAccept(int32& fd, std::string& ip, uint16& port, ReactorU
         };
 
         // 执行IOFunc
-        if (!this->m_rsd->runIOFunc(REACTOR_EVENT_READ, std::bind(IOFunc, ptr, std::ref(fd), std::ref(ip), std::ref(port)))) {
+        if (!this->m_mount->runIOFunc(REACTOR_EVENT_READ, std::bind(IOFunc, ptr, std::ref(fd), std::ref(ip), std::ref(port)))) {
             // IOFunc执行失败(EAGAIN),重新发起异步接收
             this->asynAccept(fd, ip, port, ptr);
         } else {
@@ -72,12 +69,7 @@ void StreamSocket::asynAccept(int32& fd, std::string& ip, uint16& port, ReactorU
     };
     // 构建netUnit
     SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, pRUnit, std::ref(fd), std::ref(ip), std::ref(port)));
-    if (m_first) {
-        m_first = false;
-        m_reactorEpoll->registerReadEvent(m_rsd, pNetUnit);
-    } else {
-        m_reactorEpoll->addEvent(EPOLL_EVENT_OP_READ, m_rsd, pNetUnit);
-    }
+    m_mount->startEvent(REACTOR_EVENT_READ, pNetUnit);
 }
 
 void StreamSocket::asynRecvData(char* buf, uint32 len, ReactorUnitPtr pRUnit) {
@@ -95,7 +87,7 @@ void StreamSocket::asynRecvData(char* buf, uint32 len, ReactorUnitPtr pRUnit) {
             ptr->m_transBytes = ret;
             return true;
         };
-        if (!this->m_rsd->runIOFunc(REACTOR_EVENT_READ, std::bind(IOFunc, buf, len, ptr))) {
+        if (!this->m_mount->runIOFunc(REACTOR_EVENT_READ, std::bind(IOFunc, buf, len, ptr))) {
             this->asynRecvData(buf, len, ptr);
         } else {
             ptr->complete();
@@ -104,12 +96,7 @@ void StreamSocket::asynRecvData(char* buf, uint32 len, ReactorUnitPtr pRUnit) {
 
     // 构建netUnit
     SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, buf, len, pRUnit));
-    if (m_first) {
-        m_first = false;
-        m_reactorEpoll->registerReadEvent(m_rsd, pNetUnit);
-    } else {
-        m_reactorEpoll->addEvent(EPOLL_EVENT_OP_READ, m_rsd, pNetUnit);
-    }
+    m_mount->startEvent(REACTOR_EVENT_READ, pNetUnit);
 }
 
 void StreamSocket::asynSendData(const char* buf, uint32 len, ReactorUnitPtr pRUnit) {
@@ -127,7 +114,7 @@ void StreamSocket::asynSendData(const char* buf, uint32 len, ReactorUnitPtr pRUn
             ptr->m_transBytes = ret;
             return true;
         };
-        if (!this->m_rsd->runIOFunc(REACTOR_EVENT_WRITE, std::bind(IOFunc, buf, len, ptr))) {
+        if (!this->m_mount->runIOFunc(REACTOR_EVENT_WRITE, std::bind(IOFunc, buf, len, ptr))) {
             this->asynSendData(buf, len, ptr);
         } else {
             ptr->complete();
@@ -137,7 +124,7 @@ void StreamSocket::asynSendData(const char* buf, uint32 len, ReactorUnitPtr pRUn
     // 构建netUnit
     // 默认先注册读 写事件直接添加
     SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, buf, len, pRUnit));
-    m_reactorEpoll->addEvent(EPOLL_EVENT_OP_WRITE, m_rsd, pNetUnit);
+    m_mount->startEvent(REACTOR_EVENT_WRITE, pNetUnit);
 }
 
 void StreamSocket::reUse() {
@@ -151,7 +138,7 @@ bool StreamSocket::setNonblock() {
     int32 oldFlag = ::fcntl(m_fd, F_GETFL, 0);
     int32 newFlag = oldFlag | O_NONBLOCK;
     if (::fcntl(m_fd, F_SETFL, newFlag) == INVAILD_ERROR) {
-        m_error = "Set socket nonblock error, " + GET_SYSTEM_ERRNO_INFO;
+        m_error = GET_SYSTEM_ERRNO_INFO;
         return false;
     }
     return true;
@@ -232,9 +219,7 @@ bool StreamSocket::shutDownSocket(SHUTDOWN_TYPE type) {
 
 void StreamSocket::cancelUnits() {
     // 取消units
-    m_rsd->cancelUnits();
-    // 移除reactor监控
-    m_reactorEpoll->delEvent(m_fd);
+    m_mount->cancelUnits();
 }
 
 NS_UTILS_END
