@@ -10,6 +10,7 @@
 #include "test_utils/test_scheduler.hpp"
 #include "test_utils/test_scheduler_lf.hpp"
 #include "test_utils/test_rand.hpp"
+#include "test_utils/test_reactor_epoll.hpp"
 #include "test_utils/test_thread.hpp"
 #include "test_utils/test_time.hpp"
 #include "test_utils/test_timer.hpp"
@@ -47,6 +48,9 @@ int main() {
     // test SchedulerLF
     // TestSchedulerLF();
 
+    // test ReactorEpoll
+    TestReactorEpoll();
+
     // test calc tool
     // TestCalcTool();
 
@@ -57,7 +61,7 @@ int main() {
     // TestDBManager();
 
     // test class
-    TestClass();
+    // TestClass();
 
     // test reference
     // TestReference();
