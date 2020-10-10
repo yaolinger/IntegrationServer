@@ -1,10 +1,12 @@
 #ifndef UTILS_STREAM_SOCKET_HPP
 #define UTILS_STREAM_SOCKET_HPP
 
-#include "macros.hpp"
-
 #include <memory>
 #include <string>
+#include "macros.hpp"
+#include "reactor_epoll.hpp"
+#include "reactor_unit.hpp"
+#include "scheduler_unit.hpp"
 
 NS_UTILS_BEGIN
 
@@ -15,11 +17,18 @@ typedef std::shared_ptr<ReactorSocketData> ReactorSocketDataPtr;
 // 错误数据
 #define INVAILD_ERROR -1
 
+// 关闭socket类型
+enum SHUTDOWN_TYPE {
+    SHUTDOWN_TYPE_READ = 0,
+    SHUTDOWN_TYPE_WRITE = 1,
+    SHUTDOWN_TYPE_ALL = 2,
+};
+
 // socket(数据流)
 class StreamSocket {
 public:
-    StreamSocket();
-    StreamSocket(int32 fd);
+    StreamSocket(ReactorEpollPtr pReacotr);
+    StreamSocket(int32 fd, ReactorEpollPtr pReactor);
     ~StreamSocket();
 
 public:
@@ -30,16 +39,16 @@ public:
     // 清除错误信息
     void clearError() { m_error.clear(); }
 
-// TODO: 异步操作(没想好)
+// 异步操作
 public:
     // 异步发起链接
-    void asynConnect();
+    void asynConnect(const std::string& ip, uint16 port, ReactorUnitPtr pRUnit);
     // 异步发起接受
-    void asynAccept();
-    // 异步发送数据
-    void asynSendData();
+    void asynAccept(int32& fd, std::string& ip, uint16& port, ReactorUnitPtr pRUnit);
     // 异步接受数据
-    void asynRecvData();
+    void asynRecvData(char* buf, uint32 len, ReactorUnitPtr pRUnit);
+    // 异步发送数据
+    void asynSendData(const char* buf, uint32 len, ReactorUnitPtr pRUnit);
 
 public:
     // 设置地址重用
@@ -58,11 +67,19 @@ public:
     int32 sendData(const char* buf, int32 len);
     // 接受数据
     int32 recvData(char* buf, int32 len);
+    // 关闭socket
+    bool closeSocket();
+    // 关闭socket
+    bool shutDownSocket(SHUTDOWN_TYPE type);
+    // 取消units
+    void cancelUnits();
 
 private:
-    int32 m_fd;                       // socket
-    ReactorSocketDataPtr  m_rsd;      // reactor 挂载数据
-    std::string           m_error;    // 错误数据
+    int32 m_fd;                              // socket
+    bool m_first;                            // 首次注册
+    ReactorSocketDataPtr  m_rsd;             // reactor 挂载数据
+    std::string           m_error;           // 错误数据
+    ReactorEpollPtr       m_reactorEpoll;    // reacotr(暂时不抽象)
 };
 
 NS_UTILS_END

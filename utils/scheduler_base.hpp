@@ -29,6 +29,7 @@ public:
 
     virtual void post(UnitPtr& pUnit) = 0;
 };
+typedef std::shared_ptr<SchedulerBase> SchedulerPtr;
 
 // 反应堆基础
 class ReactorBase {

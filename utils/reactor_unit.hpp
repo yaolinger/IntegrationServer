@@ -7,14 +7,13 @@
 NS_UTILS_BEGIN
 
 // 声明
-class ReactorEpoll;
+class StreamSocket;
 // 反应堆接口
-typedef std::function<void(std::string& error, uint32 transBytes)> ReactorUnitFunc;
+typedef std::function<void(const std::string error, int32 transBytes)> ReactorUnitFunc;
 
 // reactor 调度单元
 class ReactorUnit : public UnitBase {
-friend class ReactorEpoll;
-
+friend class StreamSocket;
 public:
     ReactorUnit(ReactorUnitFunc func) : m_transBytes(0), m_func(func) {
     }
@@ -25,7 +24,7 @@ public:
 
 private:
     std::string m_error;        // 错误信息
-    uint32 m_transBytes;        // 传输字节数量
+    int32 m_transBytes;        // 传输字节数量
     ReactorUnitFunc m_func;     // 执行函数
 };
 

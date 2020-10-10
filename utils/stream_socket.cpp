@@ -12,17 +12,132 @@
 
 NS_UTILS_BEGIN
 
-StreamSocket::StreamSocket() {
+StreamSocket::StreamSocket(ReactorEpollPtr pReacotr) {
     m_fd = ::socket(AF_INET, SOCK_STREAM, 0);
+    m_first = true;
     if (INVAILD_ERROR == m_fd) {
-        m_error = "Create socket error, " + GET_SYSTEM_ERRNO_INFO;
+        m_error = GET_SYSTEM_ERRNO_INFO;
+        return;
     }
+    m_rsd = std::make_shared<ReactorSocketData>(m_fd);
+    m_reactorEpoll = pReacotr;
 }
 
-StreamSocket::StreamSocket(int32 fd) : m_fd(fd) {
+StreamSocket::StreamSocket(int32 fd, ReactorEpollPtr pReacotr) : m_fd(fd), m_first(true) {
+    m_rsd = std::make_shared<ReactorSocketData>(m_fd);
+    m_reactorEpoll = pReacotr;
 }
 
 StreamSocket::~StreamSocket() {
+    m_rsd.reset();
+    m_reactorEpoll.reset();
+}
+
+void StreamSocket::asynConnect(const std::string& ip, uint16 port, ReactorUnitPtr pRUnit) {
+    auto netFunc = [this](ReactorUnitPtr ptr, std::string& ip, uint16& port) {
+        if (!this->synConnect(ip, port)) {
+            ptr->m_error = GET_SYSTEM_ERRNO_INFO;
+        }
+        ptr->complete();
+    };
+    // 直接提交执行
+    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, pRUnit, ip, port));
+    m_reactorEpoll->post(pNetUnit);
+}
+
+void StreamSocket::asynAccept(int32& fd, std::string& ip, uint16& port, ReactorUnitPtr pRUnit) {
+    // 构建 netFunc : IOFunc(网络io) + ReactorUnitPtr(逻辑回调)
+    auto netFunc = [this](ReactorUnitPtr ptr, int32& fd, std::string& ip, uint16& port) {
+        // 构建IOFunc
+        auto IOFunc = [this](ReactorUnitPtr ptr, int32& fd, std::string& ip, uint16& port) {
+            fd = this->synAccept(ip, port);
+            if (fd == INVAILD_ERROR) {
+                if (errno == EAGAIN) {
+                    log_warn("Accept socket EAGAIN");
+                    return false;
+                }
+                ptr->m_error = GET_SYSTEM_ERRNO_INFO;
+            }
+            return true;
+        };
+
+        // 执行IOFunc
+        if (!this->m_rsd->runIOFunc(REACTOR_EVENT_READ, std::bind(IOFunc, ptr, std::ref(fd), std::ref(ip), std::ref(port)))) {
+            // IOFunc执行失败(EAGAIN),重新发起异步接收
+            this->asynAccept(fd, ip, port, ptr);
+        } else {
+            // 执行ReactorUnitPtr(逻辑回调)
+            ptr->complete();
+        }
+    };
+    // 构建netUnit
+    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, pRUnit, std::ref(fd), std::ref(ip), std::ref(port)));
+    if (m_first) {
+        m_first = false;
+        m_reactorEpoll->registerReadEvent(m_rsd, pNetUnit);
+    } else {
+        m_reactorEpoll->addEvent(EPOLL_EVENT_OP_READ, m_rsd, pNetUnit);
+    }
+}
+
+void StreamSocket::asynRecvData(char* buf, uint32 len, ReactorUnitPtr pRUnit) {
+    auto netFunc = [this](char* buf, uint32 len, ReactorUnitPtr ptr) {
+        // 构建IOFunc
+        auto IOFunc = [this](char* buf, uint32 len, ReactorUnitPtr ptr) {
+            int32 ret = this->recvData(buf, len);
+            if (ret == INVAILD_ERROR) {
+                if (errno == EAGAIN) {
+                    log_warn("Asyn recv EAGAIN.");
+                    return false;
+                }
+                ptr->m_error = GET_SYSTEM_ERRNO_INFO;
+            }
+            ptr->m_transBytes = ret;
+            return true;
+        };
+        if (!this->m_rsd->runIOFunc(REACTOR_EVENT_READ, std::bind(IOFunc, buf, len, ptr))) {
+            this->asynRecvData(buf, len, ptr);
+        } else {
+            ptr->complete();
+        }
+    };
+
+    // 构建netUnit
+    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, buf, len, pRUnit));
+    if (m_first) {
+        m_first = false;
+        m_reactorEpoll->registerReadEvent(m_rsd, pNetUnit);
+    } else {
+        m_reactorEpoll->addEvent(EPOLL_EVENT_OP_READ, m_rsd, pNetUnit);
+    }
+}
+
+void StreamSocket::asynSendData(const char* buf, uint32 len, ReactorUnitPtr pRUnit) {
+    auto netFunc = [this](const char* buf, uint32 len, ReactorUnitPtr ptr) {
+        // 构建IOFunc
+        auto IOFunc = [this](const char* buf, uint32 len, ReactorUnitPtr ptr) {
+            int32 ret = this->sendData(buf, len);
+            if (ret == INVAILD_ERROR) {
+                if (errno == EAGAIN) {
+                    log_warn("Asyn send EAGAIN");
+                    return false;
+                }
+                ptr->m_error = GET_SYSTEM_ERRNO_INFO;
+            }
+            ptr->m_transBytes = ret;
+            return true;
+        };
+        if (!this->m_rsd->runIOFunc(REACTOR_EVENT_WRITE, std::bind(IOFunc, buf, len, ptr))) {
+            this->asynSendData(buf, len, ptr);
+        } else {
+            ptr->complete();
+        }
+    };
+
+    // 构建netUnit
+    // 默认先注册读 写事件直接添加
+    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, buf, len, pRUnit));
+    m_reactorEpoll->addEvent(EPOLL_EVENT_OP_WRITE, m_rsd, pNetUnit);
 }
 
 void StreamSocket::reUse() {
@@ -49,7 +164,7 @@ bool StreamSocket::bind(const std::string& ip, uint16 port) {
     bindAddr.sin_addr.s_addr = inet_addr(ip.c_str());
     bindAddr.sin_port = htons(port);
     if (::bind(m_fd, (sockaddr *)&bindAddr, sizeof(bindAddr)) == INVAILD_ERROR) {
-        m_error = "Bind ipv4 addr error, " + GET_SYSTEM_ERRNO_INFO;
+        m_error = GET_SYSTEM_ERRNO_INFO;
         return false;
     }
     return true;
@@ -58,7 +173,7 @@ bool StreamSocket::bind(const std::string& ip, uint16 port) {
 bool StreamSocket::listen() {
     clearError();
     if (::listen(m_fd, SOMAXCONN) == INVAILD_ERROR) {
-        m_error = "Listen error, " + GET_SYSTEM_ERRNO_INFO;
+        m_error = GET_SYSTEM_ERRNO_INFO;
         return false;
     }
     return true;
@@ -71,7 +186,7 @@ bool StreamSocket::synConnect(const std::string& ip, uint16 port) {
     connectAddr.sin_addr.s_addr = inet_addr(ip.c_str());
     connectAddr.sin_port = htons(port);
     if (::connect(m_fd, (sockaddr*)&connectAddr, sizeof(connectAddr)) == INVAILD_ERROR) {
-        m_error = "Connect error, " + GET_SYSTEM_ERRNO_INFO;
+        m_error = GET_SYSTEM_ERRNO_INFO;
         return false;
     }
     return true;
@@ -86,6 +201,7 @@ int32 StreamSocket::synAccept(std::string& ip, uint16& port) {
         port = ntohs(clientAddr.sin_port);
         char str[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &(clientAddr.sin_addr), str, sizeof(str));
+        ip = str;
     }
     return clientFd;
 }
@@ -96,6 +212,29 @@ int32 StreamSocket::sendData(const char* buf, int32 len) {
 
 int32 StreamSocket::recvData(char* buf, int32 len) {
     return ::recv(m_fd, buf, len, 0);
+}
+
+bool StreamSocket::closeSocket() {
+    if (::close(m_fd) == INVAILD_ERROR) {
+        m_error = GET_SYSTEM_ERRNO_INFO;
+        return false;
+    }
+    return true;
+}
+
+bool StreamSocket::shutDownSocket(SHUTDOWN_TYPE type) {
+    if (::shutdown(m_fd, type) == INVAILD_ERROR) {
+        m_error = GET_SYSTEM_ERRNO_INFO;
+        return false;
+    }
+    return true;
+}
+
+void StreamSocket::cancelUnits() {
+    // 取消units
+    m_rsd->cancelUnits();
+    // 移除reactor监控
+    m_reactorEpoll->delEvent(m_fd);
 }
 
 NS_UTILS_END

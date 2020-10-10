@@ -12,10 +12,21 @@
 
 NS_UTILS_BEGIN
 
+int32 ReactorEpoll::s_epollSize = 20000;           // epoll size
+int32 ReactorEpoll::s_eventSize = 128;             // boost标准是128, 其他也有动态写法
+int32 ReactorEpoll::s_maxTimeout = 5 * 60 * 1000;  // boost标准是5分钟
+
 ReactorEpoll::ReactorEpoll() : m_epollFd(-1), m_timerFd(-1) {
 }
 
-bool ReactorEpoll::init() {
+ReactorEpoll::~ReactorEpoll() {
+}
+
+bool ReactorEpoll::init(SchedulerPtr pScheduler) {
+    if (NULL == pScheduler) {
+        return false;
+    }
+    m_scheduler = pScheduler;
     m_epollFd = doEpollCreate();
     if (-1 == m_epollFd) {
         return false;
@@ -55,7 +66,7 @@ void ReactorEpoll::reactorWait(std::list<UnitPtr>& taskList, int32 timeout) {
     }
 }
 
-bool ReactorEpoll::registerReadEvent(ReactorSocketDataPtr ptr, ReactorUnitPtr pUnit) {
+bool ReactorEpoll::registerReadEvent(ReactorSocketDataPtr ptr, UnitPtr pUnit) {
     // ptr 外部检测
     epoll_event ev;
     ev.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLPRI | EPOLLET;
@@ -71,10 +82,22 @@ bool ReactorEpoll::registerReadEvent(ReactorSocketDataPtr ptr, ReactorUnitPtr pU
     }
 }
 
-bool ReactorEpoll::addEvent(EPOLL_EVENT_OP op, ReactorSocketDataPtr ptr, ReactorUnitPtr pUnit) {
+bool ReactorEpoll::addEvent(EPOLL_EVENT_OP op, ReactorSocketDataPtr ptr, UnitPtr pUnit) {
     if (EPOLL_EVENT_OP_READ == op) {
-        ptr->registerEventCallback(pUnit, REACTOR_EVENT_READ);
+        if (ptr->getTiggerEvent(REACTOR_EVENT_READ)) {
+            // 当前可读 直接执行unit
+            m_scheduler->post(pUnit);
+        } else {
+            // 不可读添加unit待执行
+            ptr->registerEventCallback(pUnit, REACTOR_EVENT_READ);
+        }
     } else if (EPOLL_EVENT_OP_WRITE == op) {
+        // 当前可写 直接执行unit
+        if (ptr->getTiggerEvent(REACTOR_EVENT_WRITE)) {
+            m_scheduler->post(pUnit);
+            return true;
+        }
+        // 当前不可写 添加写事件及unit待执行
         if (!(ptr->m_curEvent & EPOLLOUT)) {
             epoll_event ev;
             ev.events = ptr->m_curEvent;
@@ -102,6 +125,12 @@ bool ReactorEpoll::delEvent(int32 fd) {
     } else {
         m_error = "Del socket event error, " + GET_SYSTEM_ERRNO_INFO;
         return false;
+    }
+}
+
+void ReactorEpoll::post(UnitPtr pUnit) {
+    if (m_scheduler) {
+        m_scheduler->post(pUnit);
     }
 }
 
