@@ -6,7 +6,7 @@
 #include "utils/log.hpp"
 #include "utils/log_helper.hpp"
 #include "utils/macros.hpp"
-#include "utils/reactor.hpp"
+#include "utils/reactor_fake.hpp"
 #include "utils/scheduler_leader_follower.hpp"
 #include "utils/scheduler_unit.hpp"
 #include "utils/scheduler_safe_unit.hpp"
@@ -15,7 +15,7 @@
 void TestSchedulerLF() {
     FUNC_TRACE;
     USING_NS_UTILS;
-    ReactorPtr pReactor = std::make_shared<FakeReactor>();
+    ReactorPtr pReactor = std::make_shared<ReactorFake>();
     SchedulerLF s(SCHEDULE_LF_MODE_REACTOR|SCHEDULE_LF_MODE_TASK_LIST);
     if (!s.init(pReactor)) {
         log_error("SchedulerLF init failed.");

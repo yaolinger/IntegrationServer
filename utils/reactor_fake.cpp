@@ -1,4 +1,4 @@
-#include "reactor.hpp"
+#include "reactor_fake.hpp"
 
 #include <chrono>
 #include <thread>
@@ -9,7 +9,7 @@
 
 NS_UTILS_BEGIN
 
-void FakeReactor::reactorWait(std::list<UnitPtr>& taskList, int32 timeout) {
+void ReactorFake::reactorWait(std::list<UnitPtr>& taskList, int32 timeout) {
     log_debug("Thread[%lu] run reactor wait.", std::this_thread::get_id());
 
     // 粒度为 0.5s
