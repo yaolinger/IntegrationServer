@@ -18,8 +18,11 @@ public:
     ~ReactorTimer();
 
 public:
-    // 定时执行
+    // 定时执行(s)
     void expiresFunc(uint32 seconds, std::function<void()> func);
+    // 定时执行(ms)
+    void expiresFuncByMs(uint64 milliseconds, std::function<void()> func);
+
     // 取消func
     void cancelFunc();
 private:
@@ -28,8 +31,11 @@ private:
 
 private:
     static std::once_flag s_once;                               // call_once
-    static std::mutex s_unitMutex;                              // 待执行函数锁
-    static std::map<uint32, std::list<UnitPtr>> s_unitMap;      // unit map(TODO::后续采用小根堆)
+    static std::mutex s_secUnitMutex;                           // 秒级待执行函数锁
+    static std::map<uint32, std::list<UnitPtr>> s_secUnitMap;   // sec unit map(TODO::后续采用小根堆)
+
+    static std::mutex s_msUnitMutex;                            // 毫秒级执行函数锁
+    static std::map<uint64, std::list<UnitPtr>> s_msUnitMap;    // ms unit map(TODO::后续采用小根堆)
 
 private:
     ReactorPtr m_reactor;              // 反应堆

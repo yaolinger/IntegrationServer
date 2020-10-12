@@ -47,7 +47,7 @@ int main() {
     	// TestThread();
 
         // test time
-        TestTime();
+        // TestTime();
 
     	// test timer
     	// TestTimer();
@@ -74,7 +74,7 @@ int main() {
         // TestDBManager();
 
         // test ReactorTimer
-        // TestReactorTimer();
+        TestReactorTimer();
     }
 
     // 语法测试

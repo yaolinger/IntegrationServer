@@ -53,7 +53,7 @@ void TestReactorTimer() {
                 }
                 if (g_times < (TIMER_RUN_TIMES/2)) {
                     for (uint32 i = 0; i < times; i++) {
-                        g_timerPtr2->expiresFunc(1, [](){ log_info("随机定时器2任务~"); });
+                        g_timerPtr2->expiresFuncByMs(10, [](){ log_info("随机定时器2任务~"); });
                     }
                 } else {
                     g_timerPtr2->cancelFunc();
