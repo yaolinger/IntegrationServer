@@ -48,7 +48,6 @@ void SchedulerLF::run() {
         if (pUnit) {
             if (m_reactorUnit == pUnit) {
                 reactorFunc();
-                timerFunc();
             } else {
                 pUnit->complete();
             }
@@ -66,9 +65,6 @@ void SchedulerLF::reactorFunc() {
     taskList.push_back(m_reactorUnit);
     // 添加任务
     m_workList.pushBatchWithNotify(taskList);
-}
-
-void SchedulerLF::timerFunc() {
 }
 
 void SchedulerLF::startWait() {

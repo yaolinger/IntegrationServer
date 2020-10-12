@@ -50,9 +50,6 @@ private:
     // 生产者
     void producerFunc();
 
-    // 定时器
-    void timerFunc();
-
     // 消费者
     void consumerFunc();
 

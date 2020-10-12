@@ -42,12 +42,6 @@ private:
     // reactor 网络事件
     void reactorFunc();
 
-    // 计时器
-    void timerFunc();
-
-    // 其他事件
-    void otherFunc();
-
     // 工作开始等待
     void startWait();
 

@@ -49,15 +49,10 @@ void Scheduler::reactorThreadFunc() {
 
     do {
         producerFunc();
-        timerFunc();
     } while(m_reactorStart);
 }
 
 void Scheduler::producerFunc() {
-    // TODO
-}
-
-void Scheduler::timerFunc() {
     // TODO
 }
 

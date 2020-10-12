@@ -12,6 +12,7 @@ public:
 
     const std::string& getError() { return m_error; }
 
+    void setTimerCheck(GetTimerTaskFunc func) {}
 private:
     std::string m_error = "fake";
 };

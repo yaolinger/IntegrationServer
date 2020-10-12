@@ -31,12 +31,17 @@ public:
 };
 typedef std::shared_ptr<SchedulerBase> SchedulerPtr;
 
+// 获取计时器任务
+typedef std::function<void(std::list<UnitPtr>& taskList)> GetTimerTaskFunc;
 // 反应堆基础
 class ReactorBase {
 public:
     virtual void reactorWait(std::list<UnitPtr>& taskList, int32 timeout) = 0;
 
     virtual const std::string& getError() = 0;
+
+    // 计时器检测
+    virtual void setTimerCheck(GetTimerTaskFunc func) = 0;
 };
 
 typedef std::shared_ptr<ReactorBase> ReactorPtr;

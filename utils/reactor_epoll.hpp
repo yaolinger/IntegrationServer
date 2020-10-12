@@ -25,7 +25,8 @@ public:
     bool delEvent(int32 fd);
     // 分发事件
     void post(UnitPtr pUnit);
-
+    // 设置计时器检测
+    void setTimerCheck(GetTimerTaskFunc func) { m_timerTaskFunc = func; }
 private:
     // 创建epoll socket;
     static int32 doEpollCreate();
@@ -38,6 +39,7 @@ private:
     std::string m_error;                                      // 错误信息
     SchedulerPtr m_scheduler;                                 // 调度器
     std::map<int32, ReactorEpollMountDataPtr> m_mountMap;     // 挂载数据
+    GetTimerTaskFunc m_timerTaskFunc;                         // 计时器任务Func
 
 private:
     static int32 s_epollSize;   // epoll size

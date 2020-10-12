@@ -64,6 +64,10 @@ void ReactorEpoll::reactorWait(std::list<UnitPtr>& taskList, int32 timeout) {
             pMount->runEventOp(taskList, eventMask);
         }
     }
+
+    if (m_timerTaskFunc) {
+        m_timerTaskFunc(taskList);
+    }
 }
 
 bool ReactorEpoll::startEvent(REACTOR_EVENT event, ReactorEpollMountDataPtr ptr, UnitPtr pUnit) {

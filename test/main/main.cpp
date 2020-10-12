@@ -12,6 +12,7 @@
 #include "test_utils/test_scheduler_lf.hpp"
 #include "test_utils/test_rand.hpp"
 #include "test_utils/test_reactor_epoll.hpp"
+#include "test_utils/test_reactor_timer.hpp"
 #include "test_utils/test_thread.hpp"
 #include "test_utils/test_time.hpp"
 #include "test_utils/test_timer.hpp"
@@ -70,6 +71,9 @@ int main() {
 
         // test DBManager
         // TestDBManager();
+
+        // test ReactorTimer
+        TestReactorTimer();
     }
 
     // 语法测试
@@ -84,7 +88,7 @@ int main() {
         // TestCast();
 
         // test mutex;
-        TestMutex();
+        //TestMutex();
     }
     return 0;
 }
