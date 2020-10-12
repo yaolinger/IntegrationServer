@@ -10,6 +10,7 @@
 #include "utils/scheduler_unit.hpp"
 #include "utils/scheduler_safe_unit.hpp"
 #include "utils/thread_pool.hpp"
+#include "test_stream_socket.hpp"
 
 // 批量任务测试
 #define BATCH_TASK_TEST false
@@ -18,9 +19,43 @@
 // 网络测试
 #define NETWORK_TASK_TEST true
 #ifdef NETWORK_TASK_TEST
-#   include "test_stream_socket.hpp"
-static NetworkAccept s_networkAccept;
-static NetworkSocket s_networkConnect;
+/*******************服务端*************/
+//#define NETWORK_SERVER true
+//static NetworkAccept s_networkAccept;
+
+/*******************机器人*************/
+#define NETWORK_CLIENT true
+static uint32 s_robotCount = 50;
+static uint32 s_robotId = 0;
+class Robot {
+public:
+    Robot() { m_robotId = ++s_robotId; }
+
+    bool init(UTILS::ReactorEpollPtr pReactor, std::string ip, uint16 port) {
+        std::shared_ptr<UTILS::StreamSocket> pSSocket = std::make_shared<UTILS::StreamSocket>(pReactor);
+        if (pSSocket->getFd() == -1) {
+            log_error("Create connect socket[%s]", pSSocket->getError().c_str());
+            return false;
+        }
+        m_sendTimer = std::make_shared<UTILS::ReactorTimer>(pReactor);
+        m_networkConnect.init(pReactor, pSSocket, ip, port);
+        m_networkConnect.connect();
+        sendFunc();
+        return true;
+    }
+
+    void sendFunc() {
+        uint32 count = UTILS::Rand::randBetween((uint32)10, (uint32)1000);
+        std::string str = UTILS::Rand::randString(count);
+        m_networkConnect.send("机器人[" + std::to_string(m_robotId) +"] say:" + str);
+        m_sendTimer->expiresFunc(1, [&](){ this->sendFunc(); });
+    }
+
+    uint32 m_robotId;
+    NetworkSocket m_networkConnect;
+    std::shared_ptr<UTILS::ReactorTimer> m_sendTimer;
+};
+std::vector<std::shared_ptr<Robot>> s_robotVec;
 #endif
 
 void TestReactorEpoll() {
@@ -65,7 +100,7 @@ void TestReactorEpoll() {
 
 #ifdef NETWORK_TASK_TEST
     {
-        // 开启服务
+#ifdef NETWORK_SERVER
         {
            std::shared_ptr<StreamSocket> pSSocket = std::make_shared<StreamSocket>(pRE);
            if (pSSocket->getFd() == -1) {
@@ -80,18 +115,18 @@ void TestReactorEpoll() {
            }
            s_networkAccept.accept();
         }
-
-        // 自产自销测试
-        // 发起链接
-        do {
-            std::shared_ptr<StreamSocket> pSSocket = std::make_shared<StreamSocket>(pRE);
-            if (pSSocket->getFd() == -1) {
-                log_error("Create connect socket[%s]", pSSocket->getError().c_str());
-                break;
+#elif NETWORK_CLIENT
+        {
+            for (uint32 i = 0; i < s_robotCount; i++) {
+                std::shared_ptr<Robot> pRobot = std::make_shared<Robot>();
+                if (!pRobot->init(pRE, "0.0.0.0", 7777)) {
+                    log_error("Robot[%u] init faild.", pRobot->m_robotId);
+                } else {
+                    s_robotVec.push_back(pRobot);
+                }
             }
-            s_networkConnect.init(pSSocket, "0.0.0.0", 7777);
-            s_networkConnect.connect();
-        } while(0);
+        }
+#endif
     }
 #endif
 }

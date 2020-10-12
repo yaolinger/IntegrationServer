@@ -6,6 +6,7 @@
 #include "utils/macros.hpp"
 #include "utils/rand.hpp"
 #include "utils/reactor_epoll.hpp"
+#include "utils/reactor_timer.hpp"
 #include "utils/stream_socket.hpp"
 #include "utils/log.hpp"
 
@@ -19,9 +20,10 @@ public:
         m_closeSign.store(false);
         m_writeSign.store(false);
     }
-    NetworkSocket(std::shared_ptr<UTILS::StreamSocket> pSS, std::string ip, uint16 port) : m_sSocket(pSS) , m_port(port), m_ip(std::move(ip)) {
+    NetworkSocket(UTILS::ReactorEpollPtr pReactor, std::shared_ptr<UTILS::StreamSocket> pSS, std::string ip, uint16 port) : m_sSocket(pSS) , m_port(port), m_ip(std::move(ip)) {
         m_closeSign.store(false);
         m_writeSign.store(false);
+        m_connectTimer = std::make_shared<UTILS::ReactorTimer>(pReactor);
     }
     ~NetworkSocket() {
         if (m_sSocket) {
@@ -29,46 +31,33 @@ public:
         }
     }
 
-    void init(std::shared_ptr<UTILS::StreamSocket> pSS, std::string ip, uint16 port) {
+    void init(UTILS::ReactorEpollPtr pReactor, std::shared_ptr<UTILS::StreamSocket> pSS, std::string ip, uint16 port) {
+        m_connectTimer = std::make_shared<UTILS::ReactorTimer>(pReactor);
         m_sSocket = pSS;
         m_port = port;
         m_ip = ip;
     }
 
     void connect() {
+        m_sSocket->setNonblock();
         auto func = [&](const std::string error, int32 transBytes) {
             if (error.size() == 0) {
-                // 发起异步接受
+                log_info("Connect[%s:%u] successful~~~.", this->m_ip.c_str(), this->m_port);
                 this->recv();
-                this->simpleLogic();
             } else {
                 log_error("Connect error, %s", error.c_str());
                 this->reconnect();
             }
         };
-
         UTILS::ReactorUnitPtr pRUnit = std::make_shared<UTILS::ReactorUnit>(func);
         m_sSocket->asynConnect(m_ip, m_port, pRUnit);
     }
 
     void reconnect() {
-        // TODO::暂不实现
-        // 启动定时器 定期发起链接
-    }
-
-private:
-    uint64_t m_calcValue = 0;
-    void simpleLogic() {
-        auto func = [this]() {
-            // 计时器未实现写个简单发送逻辑
-            uint32 times = UTILS::Rand::randBetween((uint32)500, (uint32)5000);
-            uint32 strLen = UTILS::Rand::randBetween((uint32)500, (uint32)5000);
-            std::this_thread::sleep_for(std::chrono::milliseconds(times));
-            std::string str = UTILS::Rand::randString(strLen);
-            send(str);
-            this->simpleLogic();
-        };
-        func();
+        m_connectTimer->expiresFunc(1, [this](){
+                log_info("Reconnect[%s:%u] ........", this->m_ip.c_str(), this->m_port);
+                this->connect();
+            });
     }
 
 public:
@@ -113,7 +102,6 @@ public:
                 log_error("Send data error,%s", error.c_str());
                 return;
             }
-
             log_info("Send socket[%d] data[%d]", this->m_sSocket->getFd(), transBytes);
             for (int32 i = 0; i< transBytes && m_writeBytes.size() > 0; i++) {
                 m_writeBytes.erase(m_writeBytes.begin());
@@ -138,10 +126,11 @@ private:
     std::shared_ptr<UTILS::StreamSocket> m_sSocket;
     uint16 m_port;
     std::string m_ip;
-    std::atomic<bool> m_closeSign;
-    char m_readBytes[READ_CACHE_LEN];
-    std::atomic<bool> m_writeSign;
-    std::vector<char> m_writeBytes;
+    std::atomic<bool> m_closeSign;                            // 关闭标识
+    char m_readBytes[READ_CACHE_LEN];                         // 读缓存区
+    std::atomic<bool> m_writeSign;                            // 写标识
+    std::vector<char> m_writeBytes;                           // 写缓存区
+    std::shared_ptr<UTILS::ReactorTimer> m_connectTimer;      // 重连定时器
 };
 
 typedef std::shared_ptr<NetworkSocket> NSocketPtr;
@@ -188,7 +177,7 @@ public:
             //std::this_thread::sleep_for(std::chrono::milliseconds(10));
             std::shared_ptr<UTILS::StreamSocket> pSSocket = std::make_shared<UTILS::StreamSocket>(m_newFd, m_eReactor);
             pSSocket->setNonblock();
-            NSocketPtr pNSocket = std::make_shared<NetworkSocket>(pSSocket, m_newIp, m_newPort);
+            NSocketPtr pNSocket = std::make_shared<NetworkSocket>(m_eReactor, pSSocket, m_newIp, m_newPort);
             this->m_socketMap[m_newFd] = pNSocket;
             pNSocket->recv();
             this->accept();
