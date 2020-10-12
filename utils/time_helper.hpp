@@ -26,17 +26,17 @@ public:
 public:
     // 获取经过时长(us)
     int32 durationUs() {
-        return std::chrono::duration_cast<microsecond>(now() - m_start).count();
+        return std::chrono::duration_cast<microseconds>(now() - m_start).count();
     }
 
     // 获取经过时长(ms)
     int32 durationMs() {
-        return std::chrono::duration_cast<millisecond>(now() - m_start).count();
+        return std::chrono::duration_cast<milliseconds>(now() - m_start).count();
     }
 
     // 获取经过时长(s)
     int32 durationS() {
-        return std::chrono::duration_cast<second>(now() - m_start).count();
+        return std::chrono::duration_cast<seconds>(now() - m_start).count();
     }
 
 private:
@@ -58,8 +58,14 @@ public:
     // 获取当前时间(s)
     static int32 getCurrentSecond();
 
-    // 获取系统时间
+    // 获取当前时间(ms)
+    static int64 getCurrentMilliseconds();
+
+    // 获取系统时间(s)
     static int32 getSystemCurrentSecond();
+
+    // 获取系统时间(ms)
+    static int64 getSystemCurrentMillisecond();
 
     // 获取时间字符串
     static std::string getTimeStr(int32 ts);

@@ -47,7 +47,7 @@ int main() {
     	// TestThread();
 
         // test time
-        // TestTime();
+        TestTime();
 
     	// test timer
     	// TestTimer();
@@ -62,7 +62,7 @@ int main() {
         // TestSchedulerLF();
 
         // test ReactorEpoll
-        TestReactorEpoll();
+        // TestReactorEpoll();
 
         // test calc tool
         // TestCalcTool();

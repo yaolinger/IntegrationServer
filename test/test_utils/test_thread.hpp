@@ -9,7 +9,7 @@
 void TestThread () {
 	USING_NS_UTILS
 	auto func = []() {
-		std::this_thread::sleep_for(second(1));
+		std::this_thread::sleep_for(seconds(1));
 	    log_trace("Thread[%ld] run thread func ~~~~~~~~~~~~~~~~~~", std::this_thread::get_id());
     };
 
