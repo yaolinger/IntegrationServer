@@ -3,6 +3,7 @@
 #include "test_logic_work/test_battle.hpp"
 #include "test_syntax/test_cast.hpp"
 #include "test_syntax/test_class.hpp"
+#include "test_syntax/test_mutex.hpp"
 #include "test_syntax/test_reference.hpp"
 #include "test_utils/test_calc_tool.hpp"
 #include "test_utils/test_db_connection_pool.hpp"
@@ -27,49 +28,63 @@ void baseInit() {
 int main() {
     baseInit();
 
-	// test thread
-	// TestThread();
+    // proto 测试
+    {
+   	    // test msg
+	    // TestMsg();
+    }
 
-    // test time
-    // TestTime();
+    // logic work 测试
+    {
+        // test battle
+        // TestBattle();
+    }
 
-	// test timer
-	// TestTimer();
+    {
+    	// test thread
+    	// TestThread();
 
-	// test msg
-	// TestMsg();
+        // test time
+        // TestTime();
 
-    // test rand
-    // TestRand();
+    	// test timer
+    	// TestTimer();
 
-    // test Scheduler
-    // TestScheduler();
+        // test rand
+        // TestRand();
 
-    // test SchedulerLF
-    // TestSchedulerLF();
+        // test Scheduler
+        // TestScheduler();
 
-    // test ReactorEpoll
-    TestReactorEpoll();
+        // test SchedulerLF
+        // TestSchedulerLF();
 
-    // test calc tool
-    // TestCalcTool();
+        // test ReactorEpoll
+        // TestReactorEpoll();
 
-    // test DBConnectionPool
-    // TestDBConnectionPool();
+        // test calc tool
+        // TestCalcTool();
 
-    // test DBManager
-    // TestDBManager();
+        // test DBConnectionPool
+        // TestDBConnectionPool();
 
-    // test class
-    // TestClass();
+        // test DBManager
+        // TestDBManager();
+    }
 
-    // test reference
-    // TestReference();
+    // 语法测试
+    {
+        // test class
+        // TestClass();
 
-    // test cast
-    // TestCast();
+        // test reference
+        // TestReference();
 
-    // test battle
-    // TestBattle();
+        // test cast
+        // TestCast();
+
+        // test mutex;
+        TestMutex();
+    }
     return 0;
 }
