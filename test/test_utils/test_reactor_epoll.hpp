@@ -25,11 +25,12 @@
 
 /*******************机器人*************/
 #define NETWORK_CLIENT true
-static uint32 s_robotCount = 50;
+static uint32 s_robotCount = 20;
 static uint32 s_robotId = 0;
 class Robot {
 public:
-    Robot() { m_robotId = ++s_robotId; }
+    Robot() { m_robotId = ++s_robotId; m_accuMsgCount = 0; m_close.store(false); }
+    ~Robot() {}
 
     bool init(UTILS::ReactorEpollPtr pReactor, std::string ip, uint16 port) {
         std::shared_ptr<UTILS::StreamSocket> pSSocket = std::make_shared<UTILS::StreamSocket>(pReactor);
@@ -45,17 +46,22 @@ public:
     }
 
     void sendFunc() {
+        m_accuMsgCount++;
         uint32 count = UTILS::Rand::randBetween((uint32)10, (uint32)1000);
+        uint32 secs = UTILS::Rand::randBetween((uint32)20, (uint32)80);
         std::string str = UTILS::Rand::randString(count);
-        m_networkConnect.send("机器人[" + std::to_string(m_robotId) +"] say:" + str);
-        m_sendTimer->expiresFunc(1, [&](){ this->sendFunc(); });
+        m_networkConnect.send("机器人[" + std::to_string(m_robotId) +"] say : {" + str + "}");
+        m_sendTimer->expiresFuncByMs(secs, [&](){ this->sendFunc(); });
     }
 
     uint32 m_robotId;
+    uint32 m_accuMsgCount;
+    std::atomic<bool> m_close;
     NetworkSocket m_networkConnect;
     std::shared_ptr<UTILS::ReactorTimer> m_sendTimer;
 };
-std::vector<std::shared_ptr<Robot>> s_robotVec;
+std::map<uint32, std::shared_ptr<Robot>> s_robotMap;
+std::shared_ptr<UTILS::ReactorTimer> s_checkTimer;
 #endif
 
 void TestReactorEpoll() {
@@ -117,12 +123,13 @@ void TestReactorEpoll() {
         }
 #elif NETWORK_CLIENT
         {
+            // 初始化机器人
             for (uint32 i = 0; i < s_robotCount; i++) {
                 std::shared_ptr<Robot> pRobot = std::make_shared<Robot>();
                 if (!pRobot->init(pRE, "0.0.0.0", 7777)) {
                     log_error("Robot[%u] init faild.", pRobot->m_robotId);
                 } else {
-                    s_robotVec.push_back(pRobot);
+                    s_robotMap[pRobot->m_robotId] = pRobot;
                 }
             }
         }

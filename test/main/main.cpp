@@ -62,7 +62,7 @@ int main() {
         // TestSchedulerLF();
 
         // test ReactorEpoll
-        // TestReactorEpoll();
+        TestReactorEpoll();
 
         // test calc tool
         // TestCalcTool();
@@ -74,7 +74,7 @@ int main() {
         // TestDBManager();
 
         // test ReactorTimer
-        TestReactorTimer();
+        // TestReactorTimer();
     }
 
     // 语法测试
