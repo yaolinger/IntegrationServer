@@ -25,7 +25,7 @@
 
 /*******************机器人*************/
 #define NETWORK_CLIENT true
-static uint32 s_robotCount = 20;
+static uint32 s_robotCount = 50;
 static uint32 s_robotId = 0;
 class Robot {
 public:
@@ -48,7 +48,7 @@ public:
     void sendFunc() {
         m_accuMsgCount++;
         uint32 count = UTILS::Rand::randBetween((uint32)10, (uint32)1000);
-        uint32 secs = UTILS::Rand::randBetween((uint32)20, (uint32)80);
+        uint32 secs = UTILS::Rand::randBetween((uint32)30, (uint32)80);
         std::string str = UTILS::Rand::randString(count);
         m_networkConnect.send("机器人[" + std::to_string(m_robotId) +"] say : {" + str + "}");
         m_sendTimer->expiresFuncByMs(secs, [&](){ this->sendFunc(); });

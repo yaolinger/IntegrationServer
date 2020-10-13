@@ -86,16 +86,21 @@ public:
             return;
         }
 
-        for (uint32 i = 0; i < buf.size(); i++) {
-            m_writeBytes.push_back(buf[i]);
+        {
+            std::lock_guard<std::mutex> lk(m_writeCacheMutex);
+            for (uint32 i = 0; i < buf.size(); i++) {
+                m_writeBytes.push_back(buf[i]);
+            }
         }
 
-        // 正在写数据
-        if (m_writeSign.load()) {
+        if (m_writeBytes.size() == 0) {
             return;
         }
 
-        m_writeSign.store(true);
+        // 正在写数据
+        if (m_writeSign.exchange(true)) {
+            return;
+        }
 
         auto func = [&](const std::string error, int32 transBytes) {
             if (error.size() > 0) {
@@ -103,14 +108,15 @@ public:
                 return;
             }
             log_info("Send socket[%d] data[%d]", this->m_sSocket->getFd(), transBytes);
-            for (int32 i = 0; i< transBytes && m_writeBytes.size() > 0; i++) {
-                m_writeBytes.erase(m_writeBytes.begin());
+            {
+                std::lock_guard<std::mutex> lk(m_writeCacheMutex);
+                for (int32 i = 0; i< transBytes && m_writeBytes.size() > 0; i++) {
+                    m_writeBytes.erase(m_writeBytes.begin());
+                }
             }
 
             this->m_writeSign.store(false);
-            if (m_writeBytes.size() > 0) {
-                this->send(std::string(""));
-            }
+            this->send(std::string(""));
         };
         UTILS::ReactorUnitPtr pRUnit = std::make_shared<UTILS::ReactorUnit>(func);
         m_sSocket->asynSendData(&m_writeBytes[0], m_writeBytes.size(), pRUnit);
@@ -129,6 +135,7 @@ private:
     std::atomic<bool> m_closeSign;                            // 关闭标识
     char m_readBytes[READ_CACHE_LEN];                         // 读缓存区
     std::atomic<bool> m_writeSign;                            // 写标识
+    std::mutex m_writeCacheMutex;                             // 写缓存区锁
     std::vector<char> m_writeBytes;                           // 写缓存区
     std::shared_ptr<UTILS::ReactorTimer> m_connectTimer;      // 重连定时器
 };
