@@ -8,6 +8,7 @@
 
 #include "noncopyable.hpp"
 #include "scheduler_base.hpp"
+#include "scheduler_wrapped_handler.hpp"
 #include "log.hpp"
 
 NS_UTILS_BEGIN
@@ -42,6 +43,12 @@ public:
     void post(UnitFunc func);
 
     void doComplete();
+
+    // wrap:多参数function包装器(●ˇ∀ˇ●)
+    template<typename Handler>
+    SchedulerWrappedHandler<SchdelerSafeUnit, Handler> wrap(Handler handler) {
+        return SchedulerWrappedHandler<SchdelerSafeUnit, Handler>(*this, handler);
+    }
 
     SchedulerBase& m_scheduler;                           // 调度器
     std::shared_ptr<SafeUnit> m_unitPtr;                  // 执行单元

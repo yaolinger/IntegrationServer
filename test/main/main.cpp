@@ -56,13 +56,13 @@ int main() {
         // TestRand();
 
         // test Scheduler
-        // TestScheduler();
+        TestScheduler();
 
         // test SchedulerLF
         // TestSchedulerLF();
 
         // test ReactorEpoll
-        TestReactorEpoll();
+        // TestReactorEpoll();
 
         // test calc tool
         // TestCalcTool();
