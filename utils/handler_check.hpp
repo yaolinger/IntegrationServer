@@ -34,35 +34,35 @@ template <typename Handler, typename Arg1, typename Arg2>
 auto twoArgHandlerCheck(Handler h, Arg1 a1, Arg2 a2) -> decltype(h(a1, a2), byte(0));
 
 template <typename Handler>
-bytes twoArgHandlerCheck(Handler h, ...);
+byte2 twoArgHandlerCheck(Handler h, ...);
 
 // 3参数handler校验
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3>
 auto threeArgHandlerCheck(Handler h, Arg1 a1, Arg2 a2, Arg3 a3) -> decltype(h(a1, a2, a3), byte(0));
 
 template <typename Handler>
-bytes threeArgHandlerCheck(Handler h, ...);
+byte2 threeArgHandlerCheck(Handler h, ...);
 
 // 4参数handler校验
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
 auto fourArgHandlerCheck(Handler h, Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4) -> decltype(h(a1, a2, a3, a4), byte(0));
 
 template <typename Handler>
-bytes fourArgHandlerCheck(Handler h, ...);
+byte2 fourArgHandlerCheck(Handler h, ...);
 
 // 5参数handler校验
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
 auto fiveArgHandlerCheck(Handler h, Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5) -> decltype(h(a1, a2, a3, a4, a5), byte(0));
 
 template <typename Handler>
-bytes fiveArgHandlerCheck(Handler h, ...);
+byte2 fiveArgHandlerCheck(Handler h, ...);
 
 // 6参数handler校验
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
 auto sixArgHandlerCheck(Handler h, Arg1 a1, Arg2 a2, Arg3 a3, Arg4 a4, Arg5 a5, Arg6 a6) -> decltype(h(a1, a2, a3, a4, a5, a6), byte(0));
 
 template <typename Handler>
-bytes sixArgHandlerCheck(Handler h, ...);
+byte2 sixArgHandlerCheck(Handler h, ...);
 
 NS_UTILS_END
 
