@@ -5,6 +5,7 @@
 #include "test_syntax/test_class.hpp"
 #include "test_syntax/test_mutex.hpp"
 #include "test_syntax/test_reference.hpp"
+#include "test_syntax/test_SFINAE.hpp"
 #include "test_utils/test_calc_tool.hpp"
 #include "test_utils/test_db_connection_pool.hpp"
 #include "test_utils/test_db_manager.hpp"
@@ -56,7 +57,7 @@ int main() {
         // TestRand();
 
         // test Scheduler
-        TestScheduler();
+        // TestScheduler();
 
         // test SchedulerLF
         // TestSchedulerLF();
@@ -75,6 +76,9 @@ int main() {
 
         // test ReactorTimer
         // TestReactorTimer();
+
+        // test SFINAE
+        TestSFINAE();
     }
 
     // 语法测试

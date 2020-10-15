@@ -1,9 +1,8 @@
 #ifndef UTILS_SCHEDULER_WRAPPED_HANDLER_HPP
 #define UTILS_SCHEDULER_WRAPPED_HANDLER_HPP
 
-#include "macros.hpp"
-#include "log.hpp"
 #include <functional>
+#include "macros.hpp"
 
 NS_UTILS_BEGIN
 
