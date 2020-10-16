@@ -9,7 +9,6 @@
 
 #include "error.hpp"
 #include "log.hpp"
-#include "reactor_epoll_mount_data.hpp"
 
 NS_UTILS_BEGIN
 
@@ -28,103 +27,6 @@ StreamSocket::StreamSocket(int32 fd, ReactorEpollPtr pReacotr) : m_fd(fd) {
 
 StreamSocket::~StreamSocket() {
     m_mount.reset();
-}
-
-void StreamSocket::asynConnect(const std::string& ip, uint16 port, ReactorUnitPtr pRUnit) {
-    auto netFunc = [this](ReactorUnitPtr ptr, std::string& ip, uint16& port) {
-        if (!this->synConnect(ip, port)) {
-            ptr->m_error = GET_SYSTEM_ERRNO_INFO;
-        }
-        ptr->complete();
-    };
-    // 直接提交执行
-    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, pRUnit, ip, port));
-    m_mount->post(pNetUnit);
-}
-
-void StreamSocket::asynAccept(int32& fd, std::string& ip, uint16& port, ReactorUnitPtr pRUnit) {
-    // 构建 netFunc : IOFunc(网络io) + ReactorUnitPtr(逻辑回调)
-    auto netFunc = [this](ReactorUnitPtr ptr, int32& fd, std::string& ip, uint16& port) {
-        // 构建IOFunc
-        auto IOFunc = [this](ReactorUnitPtr ptr, int32& fd, std::string& ip, uint16& port) {
-            fd = this->synAccept(ip, port);
-            if (fd == INVAILD_ERROR) {
-                if (errno == EAGAIN) {
-                    log_warn("Accept socket EAGAIN");
-                    return false;
-                }
-                ptr->m_error = GET_SYSTEM_ERRNO_INFO;
-            }
-            return true;
-        };
-
-        // 执行IOFunc
-        if (!this->m_mount->runIOFunc(REACTOR_EVENT_READ, std::bind(IOFunc, ptr, std::ref(fd), std::ref(ip), std::ref(port)))) {
-            // IOFunc执行失败(EAGAIN),重新发起异步接收
-            this->asynAccept(fd, ip, port, ptr);
-        } else {
-            // 执行ReactorUnitPtr(逻辑回调)
-            ptr->complete();
-        }
-    };
-    // 构建netUnit
-    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, pRUnit, std::ref(fd), std::ref(ip), std::ref(port)));
-    m_mount->startEvent(REACTOR_EVENT_READ, pNetUnit);
-}
-
-void StreamSocket::asynRecvData(char* buf, uint32 len, ReactorUnitPtr pRUnit) {
-    auto netFunc = [this](char* buf, uint32 len, ReactorUnitPtr ptr) {
-        // 构建IOFunc
-        auto IOFunc = [this](char* buf, uint32 len, ReactorUnitPtr ptr) {
-            int32 ret = this->recvData(buf, len);
-            if (ret == INVAILD_ERROR) {
-                if (errno == EAGAIN) {
-                    log_warn("Asyn recv EAGAIN.");
-                    return false;
-                }
-                ptr->m_error = GET_SYSTEM_ERRNO_INFO;
-            }
-            ptr->m_transBytes = ret;
-            return true;
-        };
-        if (!this->m_mount->runIOFunc(REACTOR_EVENT_READ, std::bind(IOFunc, buf, len, ptr))) {
-            this->asynRecvData(buf, len, ptr);
-        } else {
-            ptr->complete();
-        }
-    };
-
-    // 构建netUnit
-    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, buf, len, pRUnit));
-    m_mount->startEvent(REACTOR_EVENT_READ, pNetUnit);
-}
-
-void StreamSocket::asynSendData(const char* buf, uint32 len, ReactorUnitPtr pRUnit) {
-    auto netFunc = [this](const char* buf, uint32 len, ReactorUnitPtr ptr) {
-        // 构建IOFunc
-        auto IOFunc = [this](const char* buf, uint32 len, ReactorUnitPtr ptr) {
-            int32 ret = this->sendData(buf, len);
-            if (ret == INVAILD_ERROR) {
-                if (errno == EAGAIN) {
-                    log_warn("Asyn send EAGAIN");
-                    return false;
-                }
-                ptr->m_error = GET_SYSTEM_ERRNO_INFO;
-            }
-            ptr->m_transBytes = ret;
-            return true;
-        };
-        if (!this->m_mount->runIOFunc(REACTOR_EVENT_WRITE, std::bind(IOFunc, buf, len, ptr))) {
-            this->asynSendData(buf, len, ptr);
-        } else {
-            ptr->complete();
-        }
-    };
-
-    // 构建netUnit
-    // 默认先注册读 写事件直接添加
-    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, buf, len, pRUnit));
-    m_mount->startEvent(REACTOR_EVENT_WRITE, pNetUnit);
 }
 
 void StreamSocket::reUse() {

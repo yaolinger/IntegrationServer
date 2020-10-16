@@ -40,7 +40,7 @@ public:
 
     void connect() {
         m_sSocket->setNonblock();
-        auto func = [&](const std::string error, int32 transBytes) {
+        auto func = [&](const std::string error) {
             if (error.size() == 0) {
                 log_info("Connect[%s:%u] successful~~~.", this->m_ip.c_str(), this->m_port);
                 this->recv();
@@ -49,8 +49,7 @@ public:
                 this->reconnect();
             }
         };
-        UTILS::ReactorUnitPtr pRUnit = std::make_shared<UTILS::ReactorUnit>(func);
-        m_sSocket->asynConnect(m_ip, m_port, pRUnit);
+        m_sSocket->asyncConnect(m_ip, m_port, func);
     }
 
     void reconnect() {
@@ -73,12 +72,11 @@ public:
                 return;
             }
 
-            log_info("Recv socket[%d] data[%d:%s]", this->m_sSocket->getFd(), transBytes, this->m_readBytes);
+            log_info("Recv socket[%d] data[%d]", this->m_sSocket->getFd(), transBytes);
             this->recv();
         };
-        UTILS::ReactorUnitPtr pRUnit = std::make_shared<UTILS::ReactorUnit>(func);
         memset(m_readBytes, 0, READ_CACHE_LEN);
-        m_sSocket->asynRecvData(m_readBytes, READ_CACHE_LEN, pRUnit);
+        m_sSocket->asyncReadData(m_readBytes, READ_CACHE_LEN, func);
     }
 
     void send(std::string buf) {
@@ -118,8 +116,7 @@ public:
             this->m_writeSign.store(false);
             this->send(std::string(""));
         };
-        UTILS::ReactorUnitPtr pRUnit = std::make_shared<UTILS::ReactorUnit>(func);
-        m_sSocket->asynSendData(&m_writeBytes[0], m_writeBytes.size(), pRUnit);
+        m_sSocket->asyncWriteData(&m_writeBytes[0], m_writeBytes.size(), func);
     }
 
     void close() {
@@ -175,13 +172,12 @@ public:
     }
 
     void accept() {
-        auto func = [&](const std::string error, int32 transBytes) {
+        auto func = [&](const std::string error) {
             if (m_newFd == -1) {
                 log_error("Accept error[%s]", error.c_str());
                 return;
             }
             log_info("New socket[%s:%u:%d] on thread[%ld]", m_newIp.c_str(), m_newPort, m_newFd, std::this_thread::get_id());
-            //std::this_thread::sleep_for(std::chrono::milliseconds(10));
             std::shared_ptr<UTILS::StreamSocket> pSSocket = std::make_shared<UTILS::StreamSocket>(m_newFd, m_eReactor);
             pSSocket->setNonblock();
             NSocketPtr pNSocket = std::make_shared<NetworkSocket>(m_eReactor, pSSocket, m_newIp, m_newPort);
@@ -189,8 +185,7 @@ public:
             pNSocket->recv();
             this->accept();
         };
-        UTILS::ReactorUnitPtr pRUnit = std::make_shared<UTILS::ReactorUnit>(func);
-        m_sSocket->asynAccept(m_newFd, m_newIp, m_newPort, pRUnit);
+        m_sSocket->asyncAccept(m_newFd, m_newIp, m_newPort, func);
     }
 
 private:

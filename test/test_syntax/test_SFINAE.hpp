@@ -18,10 +18,10 @@ typedef uint16 result2;  // 2字节
 
 // 检测参数模板
 template <typename Handler, typename Arg1>
-auto oneArgHandlerCheck(Handler h, Arg1 a) -> decltype(h(a), result(0));
+auto oneArgHandlerTest(Handler h, Arg1 a) -> decltype(h(a), result(0));
 
 template <typename Handler>
-result2 oneArgHandlerCheck(Handler h, ...);
+result2 oneArgHandlerTest(Handler h, ...);
 
 void TestSFINAE() {
     FUNC_TRACE;
@@ -51,12 +51,12 @@ void TestSFINAE() {
     };
 
     std::string error;
-    static_assert(sizeof(oneArgHandlerCheck(oneArgFunc, error)) == 1, "ArgHandler not met.");
-    static_assert(sizeof(oneArgHandlerCheck(oneArgFunctor, error)) == 1, "ArgHandler not met.");
+    static_assert(sizeof(oneArgHandlerTest(oneArgFunc, error)) == 1, "ArgHandler not met.");
+    static_assert(sizeof(oneArgHandlerTest(oneArgFunctor, error)) == 1, "ArgHandler not met.");
 
-    // 模板推导为 result2 oneArgHandlerCheck sizeof == 2, 断言1则编译报出异常
-    //static_assert(sizeof(oneArgHandlerCheck(nullArgFunc, error)) == 1, "ArgHandler not met.");
-    static_assert(sizeof(oneArgHandlerCheck(nullArgFunc, error)) == 2, "ArgHandler not met.");
+    // 模板推导为 result2 oneArgHandlerTest sizeof == 2, 断言1则编译报出异常
+    //static_assert(sizeof(oneArgHandlerTest(nullArgFunc, error)) == 1, "ArgHandler not met.");
+    static_assert(sizeof(oneArgHandlerTest(nullArgFunc, error)) == 2, "ArgHandler not met.");
 }
 
 #endif
