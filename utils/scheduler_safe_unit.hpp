@@ -44,12 +44,16 @@ public:
 
     void doComplete();
 
+    void cancelUnits(UnitFunc callback);
+
     // wrap:多参数function包装器(●ˇ∀ˇ●)
     template<typename Handler>
     SchedulerWrappedHandler<SchdelerSafeUnit, Handler> wrap(Handler handler) {
         return SchedulerWrappedHandler<SchdelerSafeUnit, Handler>(*this, handler);
     }
 
+    std::atomic<bool> m_cancelFlag;                       // 关闭标识
+    UnitFunc m_cancelCallback;                            // 关闭回调
     SchedulerBase& m_scheduler;                           // 调度器
     std::shared_ptr<SafeUnit> m_unitPtr;                  // 执行单元
 };

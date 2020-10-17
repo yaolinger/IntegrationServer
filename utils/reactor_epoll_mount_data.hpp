@@ -46,11 +46,10 @@ public:
 
 private:
     int32 m_fd;                                   // socket
-    std::mutex m_triggerMutex;                    // 事件锁
+    bool m_cancelFlag;                            // 取消标识
+    std::mutex m_mutex;                           // 锁(TODO:目前使用一把锁, 待优化)
     std::map<uint32, bool> m_tiggerEventMap;      // 事件触发map(event:bool)
-    std::mutex m_unitMutex;                       // 操作锁
     std::map<uint32, UnitPtr> m_unitMap;          // 操作map (event:rUnit)
-    std::atomic<bool> m_cancelFlag;               // 结束标识
     ReactorEpollPtr m_reactor;                    // reactor
 };
 

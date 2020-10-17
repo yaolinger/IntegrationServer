@@ -20,38 +20,67 @@
 #define NETWORK_TASK_TEST true
 #ifdef NETWORK_TASK_TEST
 /*******************服务端*************/
-//#define NETWORK_SERVER true
-//static NetworkAccept s_networkAccept;
+#define NETWORK_SERVER_CLIENT false   // true 服务端 false 客户端
+static NetworkAccept s_networkAccept;
 
 /*******************机器人*************/
-#define NETWORK_CLIENT true
-static uint32 s_robotCount = 50;
+static uint32 s_robotCount = 500;
 static uint32 s_robotId = 0;
+static uint32 s_maxMsg = 30;
 class Robot {
 public:
     Robot() { m_robotId = ++s_robotId; m_accuMsgCount = 0; m_close.store(false); }
     ~Robot() {}
 
-    bool init(UTILS::ReactorEpollPtr pReactor, std::string ip, uint16 port) {
+    bool init(UTILS::ReactorEpollPtr pReactor, UTILS::SchedulerPtr pS, std::string ip, uint16 port) {
         std::shared_ptr<UTILS::StreamSocket> pSSocket = std::make_shared<UTILS::StreamSocket>(pReactor);
         if (pSSocket->getFd() == -1) {
             log_error("Create connect socket[%s]", pSSocket->getError().c_str());
             return false;
         }
         m_sendTimer = std::make_shared<UTILS::ReactorTimer>(pReactor);
-        m_networkConnect.init(pReactor, pSSocket, ip, port);
-        m_networkConnect.connect();
-        sendFunc();
+        m_networkConnect.init(pReactor, pSSocket, pS, [this](int32 fd) { Robot::doClose(this->m_robotId); }, ip, port);
+        m_networkConnect.connect(std::bind(&Robot::sendFunc, this));
         return true;
     }
 
     void sendFunc() {
-        m_accuMsgCount++;
-        uint32 count = UTILS::Rand::randBetween((uint32)10, (uint32)1000);
-        uint32 secs = UTILS::Rand::randBetween((uint32)30, (uint32)80);
+        if (++m_accuMsgCount >= s_maxMsg) {
+            m_networkConnect.close();
+            return;
+        }
+        uint32 count = UTILS::Rand::randBetween((uint32)10, (uint32)100);
+        uint32 secs = UTILS::Rand::randBetween((uint32)20, (uint32)2000);
         std::string str = UTILS::Rand::randString(count);
         m_networkConnect.send("机器人[" + std::to_string(m_robotId) +"] say : {" + str + "}");
         m_sendTimer->expiresFuncByMs(secs, [&](){ this->sendFunc(); });
+    }
+
+    static void doClose(uint32 robotId) {
+        {
+            std::lock_guard<std::mutex> lk(s_mapMutex);
+            s_robotMap.erase(robotId);
+        }
+        checkNewRobot();
+    }
+
+    static void checkNewRobot() {
+        log_info("Robot count[%u]", s_robotMap.size());
+        if (s_robotMap.size() >= s_robotCount) {
+            return;
+        }
+
+        uint32 count = s_robotCount - s_robotMap.size();
+        {
+
+            std::lock_guard<std::mutex> lk(s_mapMutex);
+            for (uint32 i = 0; i < count; i++) {
+                std::shared_ptr<Robot> pRobot = s_newFunc();
+                if (pRobot) {
+                    s_robotMap[pRobot->m_robotId] = pRobot;
+                }
+            }
+        }
     }
 
     uint32 m_robotId;
@@ -59,9 +88,14 @@ public:
     std::atomic<bool> m_close;
     NetworkSocket m_networkConnect;
     std::shared_ptr<UTILS::ReactorTimer> m_sendTimer;
+public:
+    static std::mutex s_mapMutex;
+    static std::map<uint32, std::shared_ptr<Robot>> s_robotMap;
+    static std::function<std::shared_ptr<Robot>()> s_newFunc;
 };
-std::map<uint32, std::shared_ptr<Robot>> s_robotMap;
-std::shared_ptr<UTILS::ReactorTimer> s_checkTimer;
+std::mutex Robot::s_mapMutex;
+std::map<uint32, std::shared_ptr<Robot>> Robot::s_robotMap;
+std::function<std::shared_ptr<Robot>()> Robot::s_newFunc;
 #endif
 
 void TestReactorEpoll() {
@@ -106,7 +140,7 @@ void TestReactorEpoll() {
 
 #ifdef NETWORK_TASK_TEST
     {
-#ifdef NETWORK_SERVER
+#if NETWORK_SERVER_CLIENT
         {
            std::shared_ptr<StreamSocket> pSSocket = std::make_shared<StreamSocket>(pRE);
            if (pSSocket->getFd() == -1) {
@@ -114,24 +148,23 @@ void TestReactorEpoll() {
                pS->stop();
                return;
            }
-           s_networkAccept.init(pSSocket, pRE);
+           s_networkAccept.init(pSSocket, pRE, pS);
            if (!s_networkAccept.listen("0.0.0.0", 7777)) {
                 pS->stop();
                 return;
            }
            s_networkAccept.accept();
         }
-#elif NETWORK_CLIENT
+#elif NETWORK_SERVER_CLIENT == 0
         {
-            // 初始化机器人
-            for (uint32 i = 0; i < s_robotCount; i++) {
+            Robot::s_newFunc = [&pRE, &pS] () -> std::shared_ptr<Robot> {
                 std::shared_ptr<Robot> pRobot = std::make_shared<Robot>();
-                if (!pRobot->init(pRE, "0.0.0.0", 7777)) {
-                    log_error("Robot[%u] init faild.", pRobot->m_robotId);
-                } else {
-                    s_robotMap[pRobot->m_robotId] = pRobot;
+                if (!pRobot->init(pRE, pS, "0.0.0.0", 7777)) {
+                    return NULL;
                 }
-            }
+                return pRobot;
+            };
+            Robot::checkNewRobot();
         }
 #endif
     }
