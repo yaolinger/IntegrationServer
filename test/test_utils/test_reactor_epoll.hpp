@@ -26,7 +26,7 @@ static NetworkAccept s_networkAccept;
 /*******************机器人*************/
 static uint32 s_robotCount = 500;
 static uint32 s_robotId = 0;
-static uint32 s_maxMsg = 30;
+static uint32 s_maxMsg = 10;
 class Robot {
 public:
     Robot() { m_robotId = ++s_robotId; m_accuMsgCount = 0; m_close.store(false); }

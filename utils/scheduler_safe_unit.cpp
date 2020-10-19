@@ -34,17 +34,23 @@ void SchdelerSafeUnit::doComplete() {
         iter();
     }
 
-    std::lock_guard<std::mutex> lock(m_unitPtr->listMutex);
-    m_unitPtr->waitList.swap(m_unitPtr->accessList);
+    bool over = false;
+    {
+        std::lock_guard<std::mutex> lock(m_unitPtr->listMutex);
+        m_unitPtr->waitList.swap(m_unitPtr->accessList);
 
-    if (m_unitPtr->accessList.size() == 0) {
-        m_unitPtr->access = false;
-        if (m_cancelFlag.load()) {
-            m_cancelCallback();
+        if (m_unitPtr->accessList.size() == 0) {
+            m_unitPtr->access = false;
+            if (m_cancelFlag.load()) {
+                over = true;
+            }
+        } else {
+            UnitPtr pUnit = m_unitPtr;
+            m_scheduler.post(pUnit);
         }
-    } else {
-        UnitPtr pUnit = m_unitPtr;
-        m_scheduler.post(pUnit);
+    }
+    if (over) {
+        m_cancelCallback();
     }
 }
 
