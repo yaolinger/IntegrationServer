@@ -26,7 +26,7 @@ public:
 	}
 
 	void reset() {
-		m_thread_vec.clear();
+        m_thread_vec.clear();
     }
 
 	void join() {

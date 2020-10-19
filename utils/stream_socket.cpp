@@ -15,7 +15,6 @@ NS_UTILS_BEGIN
 StreamSocket::StreamSocket(ReactorEpollPtr pReacotr) {
     m_fd = ::socket(AF_INET, SOCK_STREAM, 0);
     if (INVAILD_ERROR == m_fd) {
-        m_error = GET_SYSTEM_ERRNO_INFO;
         return;
     }
     m_mount = std::make_shared<ReactorEpollMountData>(m_fd, pReacotr);
@@ -36,53 +35,47 @@ void StreamSocket::reUse() {
 }
 
 bool StreamSocket::setNonblock() {
-    clearError();
     int32 oldFlag = ::fcntl(m_fd, F_GETFL, 0);
     int32 newFlag = oldFlag | O_NONBLOCK;
     if (::fcntl(m_fd, F_SETFL, newFlag) == INVAILD_ERROR) {
-        m_error = GET_SYSTEM_ERRNO_INFO;
         return false;
     }
     return true;
 }
 
 bool StreamSocket::bind(const std::string& ip, uint16 port) {
-    clearError();
+    CLEAR_SYSTEM_ERRNO;
     struct sockaddr_in bindAddr;
     bindAddr.sin_family = AF_INET;
     bindAddr.sin_addr.s_addr = inet_addr(ip.c_str());
     bindAddr.sin_port = htons(port);
     if (::bind(m_fd, (sockaddr *)&bindAddr, sizeof(bindAddr)) == INVAILD_ERROR) {
-        m_error = GET_SYSTEM_ERRNO_INFO;
         return false;
     }
     return true;
 }
 
 bool StreamSocket::listen() {
-    clearError();
+    CLEAR_SYSTEM_ERRNO;
     if (::listen(m_fd, SOMAXCONN) == INVAILD_ERROR) {
-        m_error = GET_SYSTEM_ERRNO_INFO;
         return false;
     }
     return true;
 }
 
 bool StreamSocket::synConnect(const std::string& ip, uint16 port) {
-    clearError();
+    CLEAR_SYSTEM_ERRNO;
     struct sockaddr_in connectAddr;
     connectAddr.sin_family = AF_INET;
     connectAddr.sin_addr.s_addr = inet_addr(ip.c_str());
     connectAddr.sin_port = htons(port);
     if (::connect(m_fd, (sockaddr*)&connectAddr, sizeof(connectAddr)) == INVAILD_ERROR) {
-        m_error = GET_SYSTEM_ERRNO_INFO;
         return false;
     }
     return true;
 }
 
 int32 StreamSocket::synAccept(std::string& ip, uint16& port) {
-    clearError();
     struct sockaddr_in clientAddr;
     socklen_t clientAddrLen = sizeof(clientAddr);
     int32 clientFd = accept(m_fd, (sockaddr*)&clientAddr, &clientAddrLen);
@@ -104,16 +97,16 @@ int32 StreamSocket::recvData(char* buf, int32 len) {
 }
 
 bool StreamSocket::closeSocket() {
+    CLEAR_SYSTEM_ERRNO;
     if (::close(m_fd) == INVAILD_ERROR) {
-        m_error = GET_SYSTEM_ERRNO_INFO;
         return false;
     }
     return true;
 }
 
 bool StreamSocket::shutDownSocket(SHUTDOWN_TYPE type) {
+    CLEAR_SYSTEM_ERRNO;
     if (::shutdown(m_fd, type) == INVAILD_ERROR) {
-        m_error = GET_SYSTEM_ERRNO_INFO;
         return false;
     }
     return true;

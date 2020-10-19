@@ -34,10 +34,8 @@ public:
 public:
     // 获取socket
     int32 getFd() { return m_fd; }
-    // 获取错误信息
-    std::string getError() { return m_error; }
-    // 清除错误信息
-    void clearError() { m_error.clear(); }
+    // 获取错误
+    std::string getError() { return GET_SYSTEM_ERRNO_INFO; }
 
 public:
     // 设置地址重用
@@ -83,7 +81,6 @@ public:
 
 private:
     int32 m_fd;                              // socket
-    std::string           m_error;           // 错误数据
     ReactorEpollMountDataPtr  m_mount;       // reactor 挂载数据
 };
 

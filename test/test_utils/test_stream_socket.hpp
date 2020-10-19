@@ -19,28 +19,28 @@ enum SOCKET_STATE {
     SOCKET_STATE_CLOSE = 1,
 };
 
+class NetworkSocket;
+typedef std::shared_ptr<NetworkSocket> NSocketPtr;
+
 // socket
-class NetworkSocket {
+class NetworkSocket : public::std::enable_shared_from_this<NetworkSocket> {
 public:
     NetworkSocket() {
         m_socketReadState.store(SOCKET_STATE_OPEN);
         m_socketWriteState.store(SOCKET_STATE_OPEN);
         m_writeSign.store(false);
-        m_closeFuncFlag.store(false);
+        m_close = false;
     }
     NetworkSocket(UTILS::ReactorEpollPtr pReactor, std::shared_ptr<UTILS::StreamSocket> pSS, UTILS::SchedulerPtr pS, std::function<void(int32 fd)> closeFunc, std::string ip, uint16 port) : m_sSocket(pSS), m_port(port), m_ip(std::move(ip)), m_closeFunc(closeFunc) {
         m_socketReadState.store(SOCKET_STATE_OPEN);
         m_socketWriteState.store(SOCKET_STATE_OPEN);
         m_writeSign.store(false);
-        m_closeFuncFlag.store(false);
+        m_close = false;
         m_connectTimer = std::make_shared<UTILS::ReactorTimer>(pReactor);
         m_readSSUP = std::make_shared<UTILS::SchdelerSafeUnit>(*pS.get());
         m_writeSSUP = std::make_shared<UTILS::SchdelerSafeUnit>(*pS.get());
     }
     ~NetworkSocket() {
-        if (m_sSocket) {
-            m_sSocket.reset();
-        }
     }
 
     void init(UTILS::ReactorEpollPtr pReactor, std::shared_ptr<UTILS::StreamSocket> pSS, UTILS::SchedulerPtr pS, std::function<void(int32 fd)> closeFunc, std::string ip, uint16 port) {
@@ -87,7 +87,7 @@ public:
             }
             if (transBytes == 0) {
                 log_info("Socket[%d] close.", this->m_sSocket->getFd());
-                this->close();
+                this->onClose();
                 return;
             }
 
@@ -138,21 +138,21 @@ public:
         m_sSocket->asyncWriteData(&m_writeBytes[0], m_writeBytes.size(), m_writeSSUP->wrap(func));
     }
 
-    void close() {
+    void onClose() {
         m_sSocket->cancelUnits();
-        doReadClose();
-        doWriteClose();
+        onReadClose();
+        onWriteClose();
     }
 
 private:
-    void doReadClose() {
+    void onReadClose() {
         m_readSSUP->cancelUnits([this] () {
                 this->m_socketReadState.store(SOCKET_STATE_CLOSE);
                 this->checkCompleteClose();
             });
     }
 
-    void doWriteClose() {
+    void onWriteClose() {
         m_writeSSUP->cancelUnits([this] () {
                 this->m_socketWriteState.store(SOCKET_STATE_CLOSE);
                 this->checkCompleteClose();
@@ -161,11 +161,24 @@ private:
 
     void checkCompleteClose() {
         if (m_socketReadState.load() && m_socketWriteState.load()) {
-            if (!m_closeFuncFlag.exchange(true)) {
-                m_sSocket->closeSocket();
-                m_closeFunc(m_sSocket->getFd());
+            {
+                std::lock_guard<std::mutex> lk(m_closeMutex);
+                if (m_close) {
+                    return;
+                }
+                m_close = true;
             }
+            // 函数包装正加NSocketPtr生命周期(防止逻辑层删除后内部m_sSocket失效)
+            auto doClose = [](NSocketPtr ptr) {
+                ptr->doCloseFunc();
+            };
+            doClose(shared_from_this());
         }
+    }
+
+    void doCloseFunc() {
+        m_closeFunc(m_sSocket->getFd());
+        m_sSocket->closeSocket();
     }
 
 private:
@@ -184,7 +197,9 @@ private:
     std::mutex m_writeCacheMutex;                             // 写缓存区锁
     std::vector<char> m_writeBytes;                           // 写缓存区
 
-    std::atomic<bool> m_closeFuncFlag;                        // 全部逻辑回调标识
+    bool m_close;                                             // 关闭
+    std::mutex m_closeMutex;                                  // 关闭锁
+    uint32 m_closeTimes = 0;
     std::function<void(int32 fd)> m_closeFunc;                // 关闭func
 };
 
@@ -196,9 +211,6 @@ public:
     NetworkAccept(std::shared_ptr<UTILS::StreamSocket> pSS, UTILS::ReactorEpollPtr pReactor, UTILS::SchedulerPtr pS) : m_sSocket(pSS), m_newFd(-1), m_pS(pS), m_eReactor(pReactor) {}
     NetworkAccept() : m_sSocket(NULL), m_newFd(-1) {};
     ~NetworkAccept() {
-        if (m_sSocket) {
-            m_sSocket.reset();
-        }
     }
 
 public:

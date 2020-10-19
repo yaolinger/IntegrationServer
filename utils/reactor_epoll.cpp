@@ -85,7 +85,7 @@ bool ReactorEpoll::startEvent(REACTOR_EVENT event, ReactorEpollMountDataPtr ptr,
             if (ptr->m_curEvent == 0) {
                 ev.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLPRI | EPOLLET;
                 epoll_ctl(m_epollFd, EPOLL_CTL_ADD, ptr->getFd(), &ev);
-                m_mountMap[ptr->getFd()] = ptr;
+                addMount(ptr->getFd(), ptr);
             } else {
                 ev.events = ptr->m_curEvent | EPOLLIN;
                 epoll_ctl(m_epollFd, EPOLL_CTL_MOD, ptr->getFd(), &ev);
@@ -107,7 +107,7 @@ bool ReactorEpoll::startEvent(REACTOR_EVENT event, ReactorEpollMountDataPtr ptr,
             if (ptr->m_curEvent == 0) {
                 ev.events = EPOLLOUT | EPOLLERR | EPOLLHUP | EPOLLPRI | EPOLLET;
                 epoll_ctl(m_epollFd, EPOLL_CTL_ADD, ptr->getFd(), &ev);
-                m_mountMap[ptr->getFd()] = ptr;
+                addMount(ptr->getFd(), ptr);
             } else {
                 ev.events = ptr->m_curEvent | EPOLLOUT;
                 epoll_ctl(m_epollFd, EPOLL_CTL_MOD, ptr->getFd(), &ev);
@@ -123,7 +123,7 @@ bool ReactorEpoll::delEvent(int32 fd) {
     epoll_event ev;
     ev.events = 0;
     if (0 == epoll_ctl(m_epollFd, EPOLL_CTL_DEL, fd, &ev)) {
-        m_mountMap.erase(fd);
+        delMount(fd);
         return true;
     } else {
         m_error = "Del socket event error, " + GET_SYSTEM_ERRNO_INFO;
@@ -148,11 +148,24 @@ int32 ReactorEpoll::doEpollCreate() {
 }
 
 ReactorEpollMountDataPtr ReactorEpoll::getMount(int32 fd) {
+    std::lock_guard<std::mutex> lk(m_mountMutex);
     auto iter = m_mountMap.find(fd);
     if (iter == m_mountMap.end()) {
         return NULL;
     }
     return iter->second;
 }
+
+void ReactorEpoll::addMount(int32 fd, ReactorEpollMountDataPtr pMount) {
+    std::lock_guard<std::mutex> lk(m_mountMutex);
+    m_mountMap[fd] = pMount;
+}
+
+void ReactorEpoll::delMount(int32 fd) {
+    std::lock_guard<std::mutex> lk(m_mountMutex);
+    m_mountMap.erase(fd);
+}
+
+
 
 NS_UTILS_END

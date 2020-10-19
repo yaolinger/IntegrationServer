@@ -55,8 +55,8 @@ void SchdelerSafeUnit::doComplete() {
 }
 
 void SchdelerSafeUnit::cancelUnits(UnitFunc logicFunc) {
-    m_cancelFlag.store(true);
     m_cancelCallback = logicFunc;
+    m_cancelFlag.store(true);
     UnitPtr pUnit = m_unitPtr;
     m_scheduler.post(pUnit);
 }

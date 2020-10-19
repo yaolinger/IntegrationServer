@@ -9,6 +9,9 @@ NS_UTILS_BEGIN
 
 // 获取系统错误
 #define GET_SYSTEM_ERRNO_INFO SystemErrno::getSystemError()
+// 清除系统错误
+#define CLEAR_SYSTEM_ERRNO \
+    errno = 0
 
 // 系统错误
 class SystemErrno {

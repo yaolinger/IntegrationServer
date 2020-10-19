@@ -27,17 +27,24 @@ public:
     void post(UnitPtr pUnit);
     // 设置计时器检测
     void setTimerCheck(GetTimerTaskFunc func) { m_timerTaskFunc = func; }
+
 private:
     // 创建epoll socket;
     static int32 doEpollCreate();
     // 获取mountData
     ReactorEpollMountDataPtr getMount(int32 fd);
+    // 添加挂载数据
+    void addMount(int32 fd, ReactorEpollMountDataPtr pMount);
+    // 删除挂载数据
+    void delMount(int32 fd);
+
 
 private:
     int32 m_epollFd;                                          // epoll socket
     int32 m_timerFd;                                          // 计时器fd(暂时未实现)
     std::string m_error;                                      // 错误信息
     SchedulerPtr m_scheduler;                                 // 调度器
+    std::mutex m_mountMutex;                                  // 挂载数据锁
     std::map<int32, ReactorEpollMountDataPtr> m_mountMap;     // 挂载数据
     GetTimerTaskFunc m_timerTaskFunc;                         // 计时器任务Func
 

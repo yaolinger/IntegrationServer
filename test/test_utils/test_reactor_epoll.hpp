@@ -20,11 +20,11 @@
 #define NETWORK_TASK_TEST true
 #ifdef NETWORK_TASK_TEST
 /*******************服务端*************/
-#define NETWORK_SERVER_CLIENT false   // true 服务端 false 客户端
+#define NETWORK_SERVER_CLIENT false // true 服务端 false 客户端
 static NetworkAccept s_networkAccept;
 
 /*******************机器人*************/
-static uint32 s_robotCount = 500;
+static uint32 s_robotCount = 100;
 static uint32 s_robotId = 0;
 static uint32 s_maxMsg = 10;
 class Robot {
@@ -39,20 +39,21 @@ public:
             return false;
         }
         m_sendTimer = std::make_shared<UTILS::ReactorTimer>(pReactor);
-        m_networkConnect.init(pReactor, pSSocket, pS, [this](int32 fd) { Robot::doClose(this->m_robotId); }, ip, port);
-        m_networkConnect.connect(std::bind(&Robot::sendFunc, this));
+        m_networkConnect = std::make_shared<NetworkSocket>();
+        m_networkConnect->init(pReactor, pSSocket, pS, [this](int32 fd) { Robot::doClose(this->m_robotId); }, ip, port);
+        m_networkConnect->connect(std::bind(&Robot::sendFunc, this));
         return true;
     }
 
     void sendFunc() {
         if (++m_accuMsgCount >= s_maxMsg) {
-            m_networkConnect.close();
+            m_networkConnect->onClose();
             return;
         }
         uint32 count = UTILS::Rand::randBetween((uint32)10, (uint32)100);
         uint32 secs = UTILS::Rand::randBetween((uint32)20, (uint32)2000);
         std::string str = UTILS::Rand::randString(count);
-        m_networkConnect.send("机器人[" + std::to_string(m_robotId) +"] say : {" + str + "}");
+        m_networkConnect->send("机器人[" + std::to_string(m_robotId) +"] say : {" + str + "}");
         m_sendTimer->expiresFuncByMs(secs, [&](){ this->sendFunc(); });
     }
 
@@ -86,7 +87,7 @@ public:
     uint32 m_robotId;
     uint32 m_accuMsgCount;
     std::atomic<bool> m_close;
-    NetworkSocket m_networkConnect;
+    NSocketPtr m_networkConnect;
     std::shared_ptr<UTILS::ReactorTimer> m_sendTimer;
 public:
     static std::mutex s_mapMutex;
