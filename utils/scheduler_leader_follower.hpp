@@ -56,6 +56,7 @@ private:
 
     ReactorPtr m_reactor;                                              // reactor
     SchdeulerUnitPtr m_reactorUnit;                                    // 切换reactor线程(reactor执行)
+    std::list<UnitPtr> m_taskList;                                     // 任务队列
 };
 
 NS_UTILS_END

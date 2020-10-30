@@ -26,21 +26,23 @@ void TestSchedulerLF() {
     pool.createThread([&s](){ s.run(); }, 3);
     s.start();
 
-    uint32 times = 10;
+    uint32 times = 1000;
     pool.createThread([&times, &s]() {
                 UnitPtr pUnit = std::make_shared<SchdeulerUnit>([&times, &s]() {
                             times--;
-                            //log_debug("Do task times[%u]", times);
+                            log_debug("Do task times[%u]", times);
                             if (0 == times) {
                                 s.stop();
+                                log_info("stop test");
                             }
                         });
 
                 uint32 count = times;
                 for (uint32 i = 0; i < count; i++) {
-                    s.post(pUnit);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50000000));
+                    //s.post(pUnit);
                 }
+                //std::this_thread::sleep_for(std::chrono::milliseconds(500));
             }, 1);
 
 }

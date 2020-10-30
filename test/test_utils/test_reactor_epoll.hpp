@@ -24,9 +24,9 @@
 static NetworkAccept s_networkAccept;
 
 /*******************机器人*************/
-static uint32 s_robotCount = 100;
+static uint32 s_robotCount = 1;
 static uint32 s_robotId = 0;
-static uint32 s_maxMsg = 10;
+static uint32 s_maxMsg = 0;
 class Robot {
 public:
     Robot() { m_robotId = ++s_robotId; m_accuMsgCount = 0; m_close.store(false); }
@@ -139,7 +139,7 @@ void TestReactorEpoll() {
             }, 1);
     }
 
-#ifdef NETWORK_TASK_TEST
+#if NETWORK_TASK_TEST
     {
 #if NETWORK_SERVER_CLIENT
         {

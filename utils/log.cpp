@@ -54,7 +54,7 @@ void Logger::output(LogLevel level, const char* file, int32 line, const char * f
 	std::vsnprintf(logMsg, LOG_MAX_LEN - 1, format, args);
 	va_end(args);
 
-	std::cout << logHead << logMsg <<OUTPUT_NULL_COLOUR << std::endl;
+	std::cout << logHead << logMsg << OUTPUT_NULL_COLOUR << std::endl;
 }
 
 bool Logger::isOutputLevel(LogLevel level) {

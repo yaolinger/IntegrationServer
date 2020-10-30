@@ -58,13 +58,12 @@ void SchedulerLF::run() {
 }
 
 void SchedulerLF::reactorFunc() {
-    // reactor timeout:10毫秒
-    std::list<UnitPtr> taskList;
-    m_reactor->reactorWait(taskList, 10);
+    // reactor 粒度改为50ms
+    m_reactor->reactorWait(m_taskList, 50);
     // 追加reactor切换任务
-    taskList.push_back(m_reactorUnit);
+    m_taskList.push_back(m_reactorUnit);
     // 添加任务
-    m_workList.pushBatchWithNotify(taskList);
+    m_workList.pushBatchWithNotify(m_taskList);
 }
 
 void SchedulerLF::startWait() {

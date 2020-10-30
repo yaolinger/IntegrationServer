@@ -25,7 +25,7 @@ enum SHUTDOWN_TYPE {
 };
 
 // socket(数据流)
-class StreamSocket {
+class StreamSocket : public std::enable_shared_from_this<StreamSocket> {
 public:
     StreamSocket(ReactorEpollPtr pReacotr);
     StreamSocket(int32 fd, ReactorEpollPtr pReactor);
@@ -79,25 +79,28 @@ public:
     template <typename Handler>
     void asyncWriteData(const char* buf, uint32 len, Handler handler);
 
-private:
+public:
     int32 m_fd;                              // socket
     ReactorEpollMountDataPtr  m_mount;       // reactor 挂载数据
 };
+
+// 智能指针
+typedef std::shared_ptr<StreamSocket> StreamSocketPtr;
 
 template <typename Handler>
 void StreamSocket::asyncConnect(const std::string& ip, uint16 port, Handler handler) {
     // 校验handler 参数
     ASYNC_CONNECT_HANDLER_CHECK(handler);
     // 构建netFunc
-    auto netFunc = [this](const std::string& ip, uint16 port, Handler handler) {
+    auto netFunc = [] (StreamSocketPtr ptr, const std::string& ip, uint16 port, Handler handler) {
         std::string error;
-        if (!this->synConnect(ip, port)) {
+        if (!ptr->synConnect(ip, port)) {
             error = GET_SYSTEM_ERRNO_INFO;
         }
         handler(error);
     };
     // 提交
-    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, std::ref(ip), port, handler));
+    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, shared_from_this(), std::ref(ip), port, handler));
     m_mount->post(pNetUnit);
 }
 
@@ -106,10 +109,10 @@ void StreamSocket::asyncAccept(int32& fd, std::string& ip, uint16& port, Handler
     // 校验handler 参数
     ASYNC_ACCEPT_HANDLER_CHECK(handler);
     // 构建netFunc
-    auto netFunc = [this](int32& fd, std::string& ip, uint16& port, Handler handler) {
+    auto netFunc = [] (StreamSocketPtr ptr, int32& fd, std::string& ip, uint16& port, Handler handler) {
         // 构建IOFunc
-        auto IOFunc = [this](int32& fd, std::string& ip, uint16& port, std::string& error) {
-            fd = this->synAccept(ip, port);
+        auto IOFunc = [] (StreamSocketPtr ptr, int32& fd, std::string& ip, uint16& port, std::string& error) {
+            fd = ptr->synAccept(ip, port);
             if (fd == INVAILD_ERROR) {
                 if (errno == EAGAIN) {
                     log_warn("Accept socket EAGAIN");
@@ -121,16 +124,16 @@ void StreamSocket::asyncAccept(int32& fd, std::string& ip, uint16& port, Handler
         };
         // 执行IOFunc
         std::string error;
-        if (!this->m_mount->runIOFunc(REACTOR_EVENT_READ, std::bind(IOFunc, std::ref(fd), std::ref(ip), std::ref(port), std::ref(error)))) {
+        if (!ptr->m_mount->runIOFunc(REACTOR_EVENT_READ, std::bind(IOFunc, ptr, std::ref(fd), std::ref(ip), std::ref(port), std::ref(error)))) {
             // IOFunc执行失败(EAGAIN),重新发起异步接收
-            this->asyncAccept(fd, ip, port, handler);
+            ptr->asyncAccept(fd, ip, port, handler);
         } else {
             handler(error);
         }
     };
 
     // 构建netUnit
-    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, std::ref(fd), std::ref(ip), std::ref(port), handler));
+    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, shared_from_this(), std::ref(fd), std::ref(ip), std::ref(port), handler));
     m_mount->startEvent(REACTOR_EVENT_READ, pNetUnit);
 }
 
@@ -139,10 +142,10 @@ void StreamSocket::asyncReadData(char* buf, uint32 len, Handler handler) {
     // 校验handler 参数
     ASYNC_READ_HANDLER_CHECK(handler);
     // 构建netFunc
-    auto netFunc = [this](char* buf, uint32 len, Handler handler) {
+    auto netFunc = [] (StreamSocketPtr ptr, char* buf, uint32 len, Handler handler) {
         // 构建IOFunc
-        auto IOFunc = [this](char* buf, uint32 len, std::string& error, int32& bytes) {
-            int32 ret = this->recvData(buf, len);
+        auto IOFunc = [] (StreamSocketPtr ptr, char* buf, uint32 len, std::string& error, int32& bytes) {
+            int32 ret = ptr->recvData(buf, len);
             if (ret == INVAILD_ERROR) {
                 if (errno == EAGAIN) {
                     log_warn("Asyn recv EAGAIN.");
@@ -156,15 +159,15 @@ void StreamSocket::asyncReadData(char* buf, uint32 len, Handler handler) {
         // 执行IOFunc
         std::string error;
         int32 bytes;
-        if (!this->m_mount->runIOFunc(REACTOR_EVENT_READ, std::bind(IOFunc, buf, len, std::ref(error), std::ref(bytes)))) {
-            this->asyncReadData(buf, len, handler);
+        if (!ptr->m_mount->runIOFunc(REACTOR_EVENT_READ, std::bind(IOFunc, ptr, buf, len, std::ref(error), std::ref(bytes)))) {
+            ptr->asyncReadData(buf, len, handler);
         } else {
             handler(error, bytes);
         }
     };
 
     // 构建netUnit
-    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, buf, len, handler));
+    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, shared_from_this(), buf, len, handler));
     m_mount->startEvent(REACTOR_EVENT_READ, pNetUnit);
 }
 
@@ -173,10 +176,10 @@ void StreamSocket::asyncWriteData(const char* buf, uint32 len, Handler handler) 
     // 校验handler 参数
     ASYNC_WRITE_HANDLER_CHECK(handler);
     // 构建netFunc
-    auto netFunc = [this](const char* buf, uint32 len, Handler handler) {
+    auto netFunc = [] (StreamSocketPtr ptr, const char* buf, uint32 len, Handler handler) {
         // 构建IOFunc
-        auto IOFunc = [this](const char* buf, uint32 len, std::string& error, int32& bytes) {
-            int32 ret = this->sendData(buf, len);
+        auto IOFunc = [] (StreamSocketPtr ptr, const char* buf, uint32 len, std::string& error, int32& bytes) {
+            int32 ret = ptr->sendData(buf, len);
             if (ret == INVAILD_ERROR) {
                 if (errno == EAGAIN) {
                     log_warn("Asyn send EAGAIN");
@@ -190,15 +193,15 @@ void StreamSocket::asyncWriteData(const char* buf, uint32 len, Handler handler) 
         // 执行IOFunc
         std::string error;
         int32 bytes;
-        if (!this->m_mount->runIOFunc(REACTOR_EVENT_WRITE, std::bind(IOFunc, buf, len, std::ref(error), std::ref(bytes)))) {
-            this->asyncWriteData(buf, len, handler);
+        if (!ptr->m_mount->runIOFunc(REACTOR_EVENT_WRITE, std::bind(IOFunc, ptr, buf, len, std::ref(error), std::ref(bytes)))) {
+            ptr->asyncWriteData(buf, len, handler);
         } else {
             handler(error, bytes);
         }
     };
 
     // 构建netUnit
-    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, buf, len, handler));
+    SchdeulerUnitPtr pNetUnit = std::make_shared<SchdeulerUnit>(std::bind(netFunc, shared_from_this(), buf, len, handler));
     m_mount->startEvent(REACTOR_EVENT_WRITE, pNetUnit);
 }
 

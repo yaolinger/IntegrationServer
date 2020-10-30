@@ -11,7 +11,7 @@
 #include "utils/thread_pool.hpp"
 
 // 定时器执行次数
-#define TIMER_RUN_TIMES 10
+#define TIMER_RUN_TIMES 10000
 
 // 定时器
 std::shared_ptr<UTILS::ReactorTimer> g_timerPtr;
@@ -47,7 +47,7 @@ void TestReactorTimer() {
         if (g_times < TIMER_RUN_TIMES) {
             // 随机添加批量任务
             {
-                uint32 times = UTILS::Rand::randBetween((uint32)1, (uint32)10);
+                uint32 times = UTILS::Rand::randBetween((uint32)1, (uint32)100);
                 for (uint32 i = 0; i < times; i++) {
                     g_timerPtr->expiresFunc(1, [](){ log_info("随机定时器1任务~"); });
                 }

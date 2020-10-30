@@ -23,7 +23,7 @@ class NetworkSocket;
 typedef std::shared_ptr<NetworkSocket> NSocketPtr;
 
 // socket
-class NetworkSocket : public::std::enable_shared_from_this<NetworkSocket> {
+class NetworkSocket : public std::enable_shared_from_this<NetworkSocket> {
 public:
     NetworkSocket() {
         m_socketReadState.store(SOCKET_STATE_OPEN);
@@ -40,6 +40,7 @@ public:
         m_readSSUP = std::make_shared<UTILS::SchdelerSafeUnit>(*pS.get());
         m_writeSSUP = std::make_shared<UTILS::SchdelerSafeUnit>(*pS.get());
     }
+
     ~NetworkSocket() {
     }
 
@@ -146,20 +147,29 @@ public:
 
 private:
     void onReadClose() {
-        m_readSSUP->cancelUnits([this] () {
-                this->m_socketReadState.store(SOCKET_STATE_CLOSE);
-                this->checkCompleteClose();
-            });
+        m_readSSUP->cancelUnits(std::bind([] (NSocketPtr ptr) {
+                ptr->checkCompleteClose(CLOSE_SIGN_READ);
+            }, shared_from_this()));
     }
 
     void onWriteClose() {
-        m_writeSSUP->cancelUnits([this] () {
-                this->m_socketWriteState.store(SOCKET_STATE_CLOSE);
-                this->checkCompleteClose();
-            });
+        m_writeSSUP->cancelUnits(std::bind([] (NSocketPtr ptr) {
+                ptr->checkCompleteClose(CLOSE_SIGN_WRITE);
+            }, shared_from_this()));
     }
 
-    void checkCompleteClose() {
+public:
+    enum CLOSE_SIGN {
+        CLOSE_SIGN_READ = 1,   // 关闭读
+        CLOSE_SIGN_WRITE = 2,  // 关闭写
+    };
+
+    void checkCompleteClose(CLOSE_SIGN sign) {
+        if (sign == CLOSE_SIGN_READ) {
+            m_socketReadState.store(SOCKET_STATE_CLOSE);
+        } else if (sign == CLOSE_SIGN_WRITE) {
+            m_socketWriteState.store(SOCKET_STATE_CLOSE);
+        }
         if (m_socketReadState.load() && m_socketWriteState.load()) {
             {
                 std::lock_guard<std::mutex> lk(m_closeMutex);

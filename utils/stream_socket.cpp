@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 #include "error.hpp"
-#include "log.hpp"
 
 NS_UTILS_BEGIN
 

@@ -1,7 +1,6 @@
 #include "reactor_timer.hpp"
 
 #include <mutex>
-#include "log.hpp"
 #include "scheduler_unit.hpp"
 #include "time_helper.hpp"
 
