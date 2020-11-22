@@ -3,6 +3,7 @@
 #include <mutex>
 #include "scheduler_unit.hpp"
 #include "time_helper.hpp"
+#include "log.hpp"
 
 NS_UTILS_BEGIN
 
@@ -79,24 +80,26 @@ void ReactorTimer::getTimerTask(std::list<UnitPtr>& taskList) {
     uint32 sysNow = TimeHelper::getSystemCurrentSecond();
     {
         std::lock_guard<std::mutex> lk(s_secUnitMutex);
-        for (auto& kv : s_secUnitMap) {
-            if (kv.first >= sysNow) {
-                break;
-            }
-            // 追加任务
-            taskList.splice(taskList.end(), kv.second);
-        }
+		for (auto iter = s_secUnitMap.begin(); iter != s_secUnitMap.end();) {
+			if (iter->first > sysNow) {
+				break;
+			}
+     		// 追加任务
+            taskList.splice(taskList.end(), iter->second);
+			iter = s_secUnitMap.erase(iter);
+		}
     }
     uint64 sysNowMs = TimeHelper::getSystemCurrentMillisecond();
     {
         std::lock_guard<std::mutex> lk(s_msUnitMutex);
-        for (auto& kv : s_msUnitMap) {
-            if (kv.first >= sysNowMs) {
-                break;
-            }
-            // 追加任务
-            taskList.splice(taskList.end(), kv.second);
-        }
+		for (auto iter = s_msUnitMap.begin(); iter != s_msUnitMap.end();) {
+			if (iter->first > sysNowMs) {
+				break;
+			}
+		    // 追加任务
+            taskList.splice(taskList.end(), iter->second);
+        	iter = s_msUnitMap.erase(iter); 
+		}
     }
 }
 
