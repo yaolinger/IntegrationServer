@@ -8,7 +8,7 @@ TEMPLATE_CMD_MANAGER_FILE=./op_cmd/template_cmd_manager.cc
 TARGET_CMD_MANAGER_FILE=cmd_manager.cc
 COPY_FILE=./op_cmd/cmd_manager.hpp
 COPY_TARGET_FILE=cmd_manager.hpp
-PROTOC=/usr/integration_server_third/bin/protoc
+PROTOC=/usr/local/integration_server_third/bin/protoc
 
 FILES=$(find ./ -name "*.proto")
 
