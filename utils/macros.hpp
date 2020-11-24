@@ -30,4 +30,8 @@ typedef unsigned int       uint32;
 typedef unsigned long long uint64;
 
 
+// ********************* value *******************************
+#define MAX_UINT32_VALUE 0xFFFFFFFF
+#define MAX_UINT64_VALUE 0xFFFFFFFFFFFFFFFF
+
 #endif
