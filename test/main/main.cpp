@@ -17,6 +17,7 @@
 #include "test_utils/test_thread.hpp"
 #include "test_utils/test_time.hpp"
 #include "test_utils/test_timer.hpp"
+#include "test_utils/test_signal_control.hpp"
 #include "test_protocpp/test_msg.hpp"
 
 void baseInit() {
@@ -63,7 +64,7 @@ int main() {
         // TestSchedulerLF();
 
         // test ReactorEpoll
-        TestReactorEpoll();
+        // TestReactorEpoll();
 
         // test calc tool
         // TestCalcTool();
@@ -79,7 +80,10 @@ int main() {
 
         // test SFINAE
         // TestSFINAE();
-    }
+    
+		// test signalControl
+		TestSignalControl();
+	}
 
     // 语法测试
     {
