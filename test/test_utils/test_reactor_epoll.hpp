@@ -26,7 +26,7 @@ static NetworkAccept s_networkAccept;
 /*******************机器人*************/
 static uint32 s_robotCount = 100;
 static uint32 s_robotId = 0;
-static uint32 s_maxMsg = 0xFFFFFFFF;
+static uint32 s_maxMsg = 50;
 class Robot {
 public:
     Robot() { m_robotId = ++s_robotId; m_accuMsgCount = 0; m_close.store(false); }
@@ -51,7 +51,7 @@ public:
             return;
         }
         uint32 count = UTILS::Rand::randBetween((uint32)10, (uint32)100);
-        uint32 secs = UTILS::Rand::randBetween((uint32)20, (uint32)2000);
+        uint32 secs = UTILS::Rand::randBetween((uint32)20, (uint32)1000);
         std::string str = UTILS::Rand::randString(count);
         m_networkConnect->send("机器人[" + std::to_string(m_robotId) +"] say : {" + str + "}");
         m_sendTimer->expiresFuncByMs(secs, [&](){ this->sendFunc(); });
