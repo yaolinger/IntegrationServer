@@ -3,6 +3,7 @@
 #include "test_logic_work/test_battle.hpp"
 #include "test_syntax/test_cast.hpp"
 #include "test_syntax/test_class.hpp"
+#include "test_syntax/test_heap.hpp"
 #include "test_syntax/test_mutex.hpp"
 #include "test_syntax/test_reference.hpp"
 #include "test_syntax/test_SFINAE.hpp"
@@ -82,7 +83,7 @@ int main() {
         // TestSFINAE();
     
 		// test signalControl
-		TestSignalControl();
+		// TestSignalControl();
 	}
 
     // 语法测试
@@ -97,7 +98,10 @@ int main() {
         // TestCast();
 
         // test mutex;
-        //TestMutex();
+        // TestMutex();
+		
+		// test heap
+		TestHeap();
     }
     return 0;
 }
