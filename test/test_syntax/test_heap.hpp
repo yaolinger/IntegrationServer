@@ -89,10 +89,20 @@ void TestHeap() {
 	testVec.push_back(22);
 	testVec.push_back(7);
 
-	XHeap<MinCompare> minHeap(testVec);
-	minHeap.pushHeap(9);
-	minHeap.popHeap();
-	minHeap.sortHeap();
+	{
+		log_warn("Max heap ~~~~~~~~~~~~~~~");
+		XHeap<MaxCompare> maxHeap(testVec);
+		maxHeap.pushHeap(9);
+		maxHeap.popHeap();
+		maxHeap.sortHeap();
+	} 
+	{
+		log_warn("Min heap ~~~~~~~~~~~~~~~");
+		XHeap<MinCompare> minHeap(testVec);
+		minHeap.pushHeap(9);
+		minHeap.popHeap();
+		minHeap.sortHeap();
+	}
 }
 
 #endif
