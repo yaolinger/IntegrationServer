@@ -8,6 +8,7 @@
 #include "test_syntax/test_mutex.hpp"
 #include "test_syntax/test_reference.hpp"
 #include "test_syntax/test_SFINAE.hpp"
+#include "test_syntax/test_virtual.hpp"
 #include "test_utils/test_calc_tool.hpp"
 #include "test_utils/test_db_connection_pool.hpp"
 #include "test_utils/test_db_manager.hpp"
@@ -90,7 +91,7 @@ int main() {
     // 语法测试
     {
 		// test c11 key words
-		TestC11KeyWords();
+		// TestC11KeyWords();
 
         // test class
         // TestClass();
@@ -106,6 +107,9 @@ int main() {
 		
 		// test heap
 		// TestHeap();
-    }
+    
+		// test virtual
+		TestVirtual();
+	}
     return 0;
 }
