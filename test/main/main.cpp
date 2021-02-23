@@ -1,6 +1,7 @@
 #include "utils/log.hpp"
 #include "utils/time_helper.hpp"
 #include "test_logic_work/test_battle.hpp"
+#include "test_syntax/test_c11_key_words.hpp"
 #include "test_syntax/test_cast.hpp"
 #include "test_syntax/test_class.hpp"
 #include "test_syntax/test_heap.hpp"
@@ -88,6 +89,9 @@ int main() {
 
     // 语法测试
     {
+		// test c11 key words
+		TestC11KeyWords();
+
         // test class
         // TestClass();
 
@@ -101,7 +105,7 @@ int main() {
         // TestMutex();
 		
 		// test heap
-		TestHeap();
+		// TestHeap();
     }
     return 0;
 }
