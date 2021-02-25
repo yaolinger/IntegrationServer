@@ -1,6 +1,7 @@
 #include "utils/log.hpp"
 #include "utils/time_helper.hpp"
 #include "test_logic_work/test_battle.hpp"
+#include "test_logic_work/test_aoi_nine.hpp"
 #include "test_syntax/test_c11_key_words.hpp"
 #include "test_syntax/test_cast.hpp"
 #include "test_syntax/test_class.hpp"
@@ -44,7 +45,10 @@ int main() {
     {
         // test battle
         // TestBattle();
-    }
+    
+		// test aoi nine
+		TestAoiNine();		
+	}
 
     // utils 测试
     {
@@ -109,7 +113,7 @@ int main() {
 		// TestHeap();
     
 		// test virtual
-		TestVirtual();
+		// TestVirtual();
 	}
     return 0;
 }
