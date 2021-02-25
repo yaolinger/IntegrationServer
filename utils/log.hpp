@@ -60,6 +60,10 @@ private:
 
 NS_UTILS_END
 
+// 个人抉择 用哪个函数宏
+//  __PRETTY_FUNCTION__ 返回参数 函数名(参数列表)
+//  __FUNCTION__ 函数名
+
 #define log_trace(format, ...) UTILS::Logger::output(UTILS::LOG_LEVEL_TRACE, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
 #define log_debug(format, ...) UTILS::Logger::output(UTILS::LOG_LEVEL_DEBUG, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
 #define log_info(format, ...) UTILS::Logger::output(UTILS::LOG_LEVEL_INFO, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
