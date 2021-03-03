@@ -47,7 +47,7 @@ int main() {
         // TestBattle();
     
 		// test aoi nine
-		TestAoiNine();		
+		// TestAoiNine();		
 	}
 
     // utils 测试
@@ -71,7 +71,7 @@ int main() {
         // TestSchedulerLF();
 
         // test ReactorEpoll
-        // TestReactorEpoll();
+        TestReactorEpoll();
 
         // test calc tool
         // TestCalcTool();

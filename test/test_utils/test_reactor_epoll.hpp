@@ -17,10 +17,8 @@
 #define BATCH_TASK_COUNT 1000
 
 // 网络测试
-#define NETWORK_TASK_TEST true
 #ifdef NETWORK_TASK_TEST
 /*******************服务端*************/
-#define NETWORK_SERVER_CLIENT false // true 服务端 false 客户端
 static NetworkAccept s_networkAccept;
 
 /*******************机器人*************/
@@ -139,9 +137,9 @@ void TestReactorEpoll() {
             }, 1);
     }
 
-#if NETWORK_TASK_TEST
+#ifdef NETWORK_TASK_TEST
     {
-#if NETWORK_SERVER_CLIENT
+#ifdef NETWORK_SERVER
         {
            std::shared_ptr<StreamSocket> pSSocket = std::make_shared<StreamSocket>(pRE);
            if (pSSocket->getFd() == -1) {
@@ -156,8 +154,8 @@ void TestReactorEpoll() {
            }
            s_networkAccept.accept();
         }
-#elif NETWORK_SERVER_CLIENT == 0
-        {
+#else
+		{
             Robot::s_newFunc = [&pRE, &pS] () -> std::shared_ptr<Robot> {
                 std::shared_ptr<Robot> pRobot = std::make_shared<Robot>();
                 if (!pRobot->init(pRE, pS, "0.0.0.0", 7777)) {
