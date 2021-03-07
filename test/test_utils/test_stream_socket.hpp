@@ -12,7 +12,7 @@
 #include "utils/log.hpp"
 
 // 读取缓存区大小
-#define READ_CACHE_LEN 102400
+#define READ_CACHE_LEN 1024
 
 enum SOCKET_STATE {
     SOCKET_STATE_OPEN = 0,
@@ -52,7 +52,9 @@ public:
         m_closeFunc = closeFunc;
         m_readSSUP = std::make_shared<UTILS::SchdelerSafeUnit>(*pS.get());
         m_writeSSUP = std::make_shared<UTILS::SchdelerSafeUnit>(*pS.get());
-    }
+    	m_sSocket->quickAck();
+		m_sSocket->noDelay();
+	}
 
     void connect(std::function<void()> callback) {
         m_sSocket->setNonblock();
@@ -63,7 +65,12 @@ public:
                 callback();
             } else {
                 log_error("Connect error, %s", error.c_str());
-                this->reconnect(callback);
+       			static bool first = true;
+				if (true) {
+					this->reconnect(callback);
+				} else {
+					this->onClose();
+				}
             }
         };
         m_sSocket->asyncConnect(m_ip, m_port, func);
@@ -87,11 +94,10 @@ public:
                 return;
             }
             if (transBytes == 0) {
-                log_info("Socket[%d] close.", this->m_sSocket->getFd());
+                log_info("TransBytes 0");
                 this->onClose();
                 return;
             }
-
             log_info("Recv socket[%d] data[%d]", this->m_sSocket->getFd(), transBytes);
             this->recv();
         };
@@ -140,7 +146,8 @@ public:
     }
 
     void onClose() {
-        m_sSocket->cancelUnits();
+        log_info("Conn[%s:%u:%d] close.", m_ip.c_str(), m_port, this->m_sSocket->getFd());
+		m_sSocket->cancelUnits();
         onReadClose();
         onWriteClose();
     }
@@ -228,10 +235,24 @@ public:
         m_sSocket = pSS;
         m_eReactor = pReacotr;
         m_pS = pS;
-    }
+    	m_timer = std::make_shared<UTILS::ReactorTimer>(m_eReactor);
+		m_timer->expiresFunc(3, [&](){ this->onTimer(); });
+	}
+
+	void onTimer() {
+		std::map<int32, NSocketPtr> socketMap = m_socketMap;
+		log_info("On timer socket count[%lu]~~~~~~", socketMap.size());
+		for (auto& kv : socketMap) {
+			if (NULL == kv.second) {
+				continue;
+			}
+			kv.second->onClose();
+		}
+		m_timer->expiresFunc(3, [&](){ this->onTimer(); });
+	}
 
     bool listen(const std::string& ip, uint16 port) {
-        m_sSocket->reUse();
+        m_sSocket->reUseAddr();
         m_sSocket->setNonblock();
         if (!m_sSocket->bind(ip, port)) {
             log_error("Bind error[%s]", m_sSocket->getError().c_str());
@@ -279,7 +300,8 @@ private:
     std::string m_newIp;
     UTILS::SchedulerPtr m_pS;
     UTILS::ReactorEpollPtr m_eReactor;
-    std::mutex m_mapMutex;
+   	std::shared_ptr<UTILS::ReactorTimer> m_timer; 
+	std::mutex m_mapMutex;
     std::map<int32, NSocketPtr> m_socketMap;
 };
 

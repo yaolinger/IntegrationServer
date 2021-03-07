@@ -58,7 +58,7 @@ void TestCast() {
     {
         BanImplicit data(1);
         BanImplicit data2 = (BanImplicit)1;
-        // BanImplicit data = 1;
+        //BanImplicit data = 1;
         data.nothing();
         data2.nothing();
     }

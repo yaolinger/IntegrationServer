@@ -3,9 +3,11 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 
 #include "error.hpp"
 
@@ -27,10 +29,24 @@ StreamSocket::~StreamSocket() {
     m_mount.reset();
 }
 
-void StreamSocket::reUse() {
+void StreamSocket::reUseAddr() {
     int32 on = 1;
     ::setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&on, sizeof(on));
+}
+
+void StreamSocket::reUsePort() {
+    int32 on = 1;
     ::setsockopt(m_fd, SOL_SOCKET, SO_REUSEPORT, (char*)&on, sizeof(on));
+}
+
+void StreamSocket::quickAck() {
+    int32 on = 1;
+    ::setsockopt(m_fd, IPPROTO_TCP, TCP_QUICKACK, (char*)&on, sizeof(on));
+}
+
+void StreamSocket::noDelay() {
+    int32 on = 1;
+    ::setsockopt(m_fd, IPPROTO_TCP, TCP_NODELAY, (char*)&on, sizeof(on));
 }
 
 bool StreamSocket::setNonblock() {

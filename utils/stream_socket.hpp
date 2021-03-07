@@ -39,7 +39,13 @@ public:
 
 public:
     // 设置地址重用
-    void reUse();
+    void reUseAddr();
+	// 端口重用
+	void reUsePort();
+	// 关闭延迟响应
+	void quickAck();
+	// 关闭nagle算法
+	void noDelay();
     // 设置非阻塞
     bool setNonblock();
     // 绑定地址
@@ -187,6 +193,7 @@ void StreamSocket::asyncWriteData(const char* buf, uint32 len, Handler handler) 
                 }
                 error = GET_SYSTEM_ERRNO_INFO;
             }
+			log_info("Send data[%d] success", ret);
             bytes = ret;
             return true;
         };

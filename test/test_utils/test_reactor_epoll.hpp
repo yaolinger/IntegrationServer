@@ -22,9 +22,9 @@
 static NetworkAccept s_networkAccept;
 
 /*******************机器人*************/
-static uint32 s_robotCount = 100;
+static uint32 s_robotCount = 1;
 static uint32 s_robotId = 0;
-static uint32 s_maxMsg = 50;
+static uint32 s_maxMsg = 2;
 class Robot {
 public:
     Robot() { m_robotId = ++s_robotId; m_accuMsgCount = 0; m_close.store(false); }
@@ -48,8 +48,8 @@ public:
             m_networkConnect->onClose();
             return;
         }
-        uint32 count = UTILS::Rand::randBetween((uint32)10, (uint32)100);
-        uint32 secs = UTILS::Rand::randBetween((uint32)20, (uint32)1000);
+        uint32 count = UTILS::Rand::randBetween((uint32)1000, (uint32)10000);
+        uint32 secs = UTILS::Rand::randBetween((uint32)20, (uint32)200);
         std::string str = UTILS::Rand::randString(count);
         m_networkConnect->send("机器人[" + std::to_string(m_robotId) +"] say : {" + str + "}");
         m_sendTimer->expiresFuncByMs(secs, [&](){ this->sendFunc(); });
@@ -158,7 +158,7 @@ void TestReactorEpoll() {
 		{
             Robot::s_newFunc = [&pRE, &pS] () -> std::shared_ptr<Robot> {
                 std::shared_ptr<Robot> pRobot = std::make_shared<Robot>();
-                if (!pRobot->init(pRE, pS, "0.0.0.0", 7777)) {
+                if (!pRobot->init(pRE, pS, "42.192.37.232", 7777)) {
                     return NULL;
                 }
                 return pRobot;
