@@ -71,7 +71,7 @@ int main() {
         // TestSchedulerLF();
 
         // test ReactorEpoll
-        TestReactorEpoll();
+        // TestReactorEpoll();
 
         // test calc tool
         // TestCalcTool();
@@ -107,7 +107,7 @@ int main() {
         // TestCast();
 
         // test mutex;
-        // TestMutex();
+        TestMutex();
 		
 		// test heap
 		// TestHeap();
