@@ -10,6 +10,7 @@
 #include "test_syntax/test_reference.hpp"
 #include "test_syntax/test_SFINAE.hpp"
 #include "test_syntax/test_virtual.hpp"
+#include "test_syntax/test_template.hpp"
 #include "test_utils/test_calc_tool.hpp"
 #include "test_utils/test_db_connection_pool.hpp"
 #include "test_utils/test_db_manager.hpp"
@@ -107,13 +108,16 @@ int main() {
         // TestCast();
 
         // test mutex;
-        TestMutex();
+        // TestMutex();
 		
 		// test heap
 		// TestHeap();
     
 		// test virtual
 		// TestVirtual();
+	
+		// test template
+		templateTest();
 	}
     return 0;
 }

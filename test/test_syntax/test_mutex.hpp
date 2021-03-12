@@ -31,15 +31,20 @@ void TestMutex() {
 		log_warn("**********std::mutex 多线程加解锁测试 ***************");
 		std::mutex testMutex;
 	    BaseThread lockThread([&]() {
-			log_info("尝试加锁");			
-			testMutex.lock();
-			log_info("加锁成功[%lu]", std::this_thread::get_id());			
+			while(true) {
+				log_info("尝试加锁");			
+				testMutex.lock();
+				log_info("加锁成功[%lu]", std::this_thread::get_id());			
+			}
 		});
 		std::this_thread::sleep_for(std::chrono::seconds(3));
 		BaseThread unlockThread([&](){
-			log_info("尝试解锁");
-			testMutex.unlock();
-			log_info("解锁成功[%lu]", std::this_thread::get_id());			
+			while(true) {
+				log_info("尝试解锁");
+				testMutex.unlock();
+				log_info("解锁成功[%lu]", std::this_thread::get_id());			
+				std::this_thread::sleep_for(std::chrono::seconds(1));
+			}
 		});
 		lockThread.join();
 		unlockThread.join();
