@@ -31,17 +31,7 @@
 //	log_info("模板模板参数");
 //}
 
-//template<typename A, typename std::vector<A>>
-//void funcTestC(A a, std::vector<A> aVec) {
-//	aVec.push_back(a);
-//	log_info("特化+容器测试 vec.size[%lu]", aVec.size());
-//}
-
-//template<typename A>
-//class Contain {
-//}
-//
-//template<typename A, typename<typename A> class B>>
+//template<typename A, template<typename U> typename B>
 //void funcTestD(A a, B b) {
 //	b.insert(a);
 //	for (auto& value : b) {
@@ -49,14 +39,32 @@
 //	}
 //}
 
+template<typename A, template<typename U> typename B>
+class TestTemplateClass {
+public:
+
+private:
+	B<A> mData;
+};
+
+template <typename T>
+class TestParam {
+};
+
+template <typename T>
+using Myset = std::set<T, std::less<T>, std::allocator<T>>;
 // 注意模板产生一样函数冲突
 //template<>
 //void funcTest(uint32 arg, std::string b) {
 //	log_info("全特化A[%u] B[%s]", b.c_str());
 //}
-//
 
-void templateTest() {
+template <typename T, uint32 N, typename C = std::vector<T>>
+void funcTest(C t) {
+	log_info("Vector size[%lu], N[%u]", t.size(), N);
+}
+
+void TestTemplate() {
 	FUNC_TRACE;
     USING_NS_UTILS;
 	
@@ -88,8 +96,18 @@ void templateTest() {
 //	{
 //		uint32 a =1;
 //		std::set<uint32> zSet;
-//		funcTestD(a, zSet);
+//		funcTestD<uint32, std::set<uint32>>(a, zSet);
 //	}
+
+	{
+		std::vector<uint32> vec;		
+		funcTest<uint32, 10>(vec);
+	}
+
+	{
+		TestTemplateClass<uint32, TestParam> a;
+		TestTemplateClass<uint32, Myset> a;
+	}
 }
 
 #endif

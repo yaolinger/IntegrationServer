@@ -16,13 +16,15 @@
 #include "test_utils/test_db_manager.hpp"
 #include "test_utils/test_scheduler.hpp"
 #include "test_utils/test_scheduler_lf.hpp"
+#include "test_utils/test_semaphore.hpp"
+#include "test_utils/test_singleton.hpp"
+#include "test_utils/test_signal_control.hpp"
 #include "test_utils/test_rand.hpp"
 #include "test_utils/test_reactor_epoll.hpp"
 #include "test_utils/test_reactor_timer.hpp"
 #include "test_utils/test_thread.hpp"
 #include "test_utils/test_time.hpp"
 #include "test_utils/test_timer.hpp"
-#include "test_utils/test_signal_control.hpp"
 #include "test_protocpp/test_msg.hpp"
 
 void baseInit() {
@@ -91,6 +93,12 @@ int main() {
     
 		// test signalControl
 		// TestSignalControl();
+	
+		// test singleton
+		// TestSingleton();
+		
+		// test semaphore
+		// TestSemaphore();
 	}
 
     // 语法测试
@@ -117,7 +125,7 @@ int main() {
 		// TestVirtual();
 	
 		// test template
-		templateTest();
+		TestTemplate();
 	}
     return 0;
 }

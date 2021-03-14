@@ -76,7 +76,8 @@ void TestReference() {
         uint32& num2 = num;  // 左值引用
         uint32&& num3 = 1;   // 右值引用
         log_info("Type num[%s] num2[%s] num3[%s]", GetValueName(num), GetValueName(num2), GetValueName(num3));
-    }
+    	log_info("基础测试");
+	}
     // 左值引用模板测试
     {
         uint32 index = 1;
@@ -128,6 +129,89 @@ void TestReference() {
         PerfertReference(2);
         log_warn("保证传递引用类型参数后，仍然维持原参数类型");
     }
+
+	// 移动语义测试
+	{
+		class Base {
+		public:
+			Base() {
+				log_info("base.");
+			}
+			Base(const Base& base) {
+				log_info("copy base.");
+			}
+			Base(Base&& base) {
+				log_info("move base");
+			}
+		};
+
+		class TestA : public Base {
+		public:
+			TestA() {
+				log_info("testA.");
+			}
+			TestA(const TestA& a) {
+				log_info("copy testA.");
+			}
+	//		TestA(TestA&& a) :Base(a) {
+	//			log_info("move testA 1.");
+	//		}
+			
+			TestA(TestA&& a) : Base(std::forward<Base>(a)){
+				log_info("move testA 2.");
+			}
+		};
+
+		TestA a;
+		log_info("*咯咯咯咯*");
+		TestA b(std::move(a));
+		log_warn("移动语义测试, 继承类调用移动构造，父类也要显示调用才可以使用移动构造");
+	}
+
+	// 拷贝构造测试
+	{
+		class Base {
+		public:
+			Base() {
+				log_info("base.");
+			}
+		private:
+			Base(const Base& base) {
+				log_info("copy base.");
+			}
+		public:
+			void operator = (const Base& base) {
+				log_info("= base");
+			}
+		};
+
+		class TestB : public Base {
+		public:
+			TestB() {
+				log_info("TestB...");
+			}
+			TestB(const TestB& b) {
+				log_info("copy Testb");
+			}
+			TestB(const int32& b) {
+				log_info("int copy testB.");
+			}
+			void operator = (const TestB& b) {
+				log_info("= testB");
+			}
+			void operator = (const int32& b) {
+				log_info("int = testB");
+			}
+		};
+		
+		TestB a;
+		TestB b;
+		b = a;
+		b = (TestB)3;
+		b = 4;
+		log_warn("拷贝构造测试");
+	}
 }
+
 
 #endif
