@@ -98,7 +98,7 @@ int main() {
 		// TestSingleton();
 		
 		// test semaphore
-		// TestSemaphore();
+		TestSemaphore();
 	}
 
     // 语法测试
@@ -125,7 +125,7 @@ int main() {
 		// TestVirtual();
 	
 		// test template
-		TestTemplate();
+		// TestTemplate();
 	}
     return 0;
 }

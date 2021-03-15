@@ -33,36 +33,32 @@
 
 //template<typename A, template<typename U> typename B>
 //void funcTestD(A a, B b) {
-//	b.insert(a);
-//	for (auto& value : b) {
-//		log_warn("容器模板循环");
-//	}
 //}
 
-template<typename A, template<typename U> typename B>
-class TestTemplateClass {
-public:
-
-private:
-	B<A> mData;
-};
-
-template <typename T>
-class TestParam {
-};
-
-template <typename T>
-using Myset = std::set<T, std::less<T>, std::allocator<T>>;
+//template<typename A, template<typename U> typename B>
+//class TestTemplateClass {
+//public:
+//
+//private:
+//	B<A> mData;
+//};
+//
+//template <typename T>
+//class TestParam {
+//};
+//
+//template <typename T>
+//using Myset = std::set<T, std::less<T>, std::allocator<T>>;
 // 注意模板产生一样函数冲突
 //template<>
 //void funcTest(uint32 arg, std::string b) {
 //	log_info("全特化A[%u] B[%s]", b.c_str());
 //}
 
-template <typename T, uint32 N, typename C = std::vector<T>>
-void funcTest(C t) {
-	log_info("Vector size[%lu], N[%u]", t.size(), N);
-}
+//template <typename T, uint32 N, typename C = std::vector<T>>
+//void funcTest(C t) {
+//	log_info("Vector size[%lu], N[%u]", t.size(), N);
+//}
 
 void TestTemplate() {
 	FUNC_TRACE;
@@ -99,15 +95,15 @@ void TestTemplate() {
 //		funcTestD<uint32, std::set<uint32>>(a, zSet);
 //	}
 
-	{
-		std::vector<uint32> vec;		
-		funcTest<uint32, 10>(vec);
-	}
-
-	{
-		TestTemplateClass<uint32, TestParam> a;
-		TestTemplateClass<uint32, Myset> a;
-	}
+//	{
+//		std::vector<uint32> vec;		
+//		funcTest<uint32, 10>(vec);
+//	}
+//
+//	{
+//		TestTemplateClass<uint32, TestParam> temaplateA;
+//		TestTemplateClass<uint32, Myset> temaplateB;
+//	}
 }
 
 #endif
