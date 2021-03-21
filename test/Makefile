@@ -2,7 +2,8 @@ include ../Makefile.config
 
 INCLUDE=$(BASE_INCLUDE) -I. -I.. -I../.. $(ZDB_INCLUDE) 
 LIB_PATH=$(BASE_LIB_PATH)
-LIB=$(BASE_LIB) -lprotobuf -lboost_system -lzdb
+#LIB=$(BASE_LIB) -lprotobuf -lboost_system -lzdb
+LIB=$(BASE_LIB) $(PROTO_LIB) $(BOOST_LIB) $(ZDB_LIB) -lmysqlclient
 USER_LIB=../utils/libutils.a ../protocpp/libprotocpp.a ../logic_work/liblogic_work.a
 
 SRCS=$(wildcard */*.cpp)

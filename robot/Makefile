@@ -2,7 +2,7 @@ include ../Makefile.config
 
 INCLUDE=$(BASE_INCLUDE) -I. -I.. -I../..
 LIB_PATH=$(BASE_LIB_PATH)
-LIB=$(BASE_LIB) -lprotobuf -lboost_system
+LIB=$(BASE_LIB) $(PROTO_LIB) $(BOOST_LIB) 
 USER_LIB=../utils/libutils.a ../protocpp/libprotocpp.a ../service_core/libservice_core.a ../boost_network/libboost_network.a
 
 SRCS=$(wildcard */*.cpp)
