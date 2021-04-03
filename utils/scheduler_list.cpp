@@ -4,7 +4,10 @@ NS_UTILS_BEGIN
 
 void SchedulerList::wait() {
     std::unique_lock<std::mutex> lock(m_mutex);
-    m_cond.wait(lock);
+    // 注意虚假唤醒以及信号丢失问题
+	m_cond.wait(lock, [this]() {
+		return !this->m_taskList.empty();
+	});
 }
 
 void SchedulerList::notify(bool all) {
