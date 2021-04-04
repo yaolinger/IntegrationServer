@@ -23,3 +23,13 @@ message MsgTestTcpRequest {
 message MsgTestTcpReply {
     optional string test = 1;
 }
+
+message pair64 {
+	optional uint32 key = 1;
+	optional uint32 value = 2;
+}
+
+message map64 {
+	repeated pair64 pair_list = 1;
+}
+

@@ -41,7 +41,7 @@ int main() {
     // proto 测试
     {
    	    // test msg
-	    // TestMsg();
+	    TestMsg();
     }
 
     // logic work 测试
@@ -98,7 +98,7 @@ int main() {
 		// TestSingleton();
 		
 		// test semaphore
-		TestSemaphore();
+		// TestSemaphore();
 	}
 
     // 语法测试
@@ -119,7 +119,7 @@ int main() {
         // TestMutex();
 		
 		// test heap
-		// TestHeap();
+		//TestHeap();
     
 		// test virtual
 		// TestVirtual();
