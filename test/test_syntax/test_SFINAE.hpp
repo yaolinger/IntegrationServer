@@ -17,8 +17,10 @@ typedef char result;   // 1字节
 typedef uint16 result2;  // 2字节
 
 // 检测参数模板
+// 注意 逗号表达式以及, decltyp推导
+// char(0) 为把0 int转化为char类型， 修改为cpp版本强制转换, 容易理解一些
 template <typename Handler, typename Arg1>
-auto oneArgHandlerTest(Handler h, Arg1 a) -> decltype(h(a), result(0));
+auto oneArgHandlerTest(Handler h, Arg1 a) -> decltype(h(a), static_cast<result>(0));
 
 template <typename Handler>
 result2 oneArgHandlerTest(Handler h, ...);

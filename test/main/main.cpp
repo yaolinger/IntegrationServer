@@ -41,7 +41,7 @@ int main() {
     // proto 测试
     {
    	    // test msg
-	    TestMsg();
+	    // TestMsg();
     }
 
     // logic work 测试
@@ -89,7 +89,7 @@ int main() {
         // TestReactorTimer();
 
         // test SFINAE
-        // TestSFINAE();
+        TestSFINAE();
     
 		// test signalControl
 		// TestSignalControl();
